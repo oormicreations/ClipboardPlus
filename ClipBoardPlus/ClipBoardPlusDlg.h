@@ -4,6 +4,8 @@
 
 #pragma once
 #include "ClipButton.h"
+#include "NetHelper.h"
+
 #define MAXCLIPS 5
 #define WM_TRAY_MESSAGE (WM_USER + 1)
 
@@ -23,6 +25,8 @@ public:
 	CMenu m_MenuPopup, m_MenuTray;
 	NOTIFYICONDATA m_TrayData;
 	BOOL m_bMinimized;
+	int m_CBPVersion;
+	CNetHelper m_NetHelper;
 
 	void InitClips();
 	void GetClip();
@@ -38,8 +42,8 @@ public:
 	void SetupMinimizeToTray();
 	void MinimizeToTray();
 	void MaximizeFromTray();
-
-
+	//void ReportUsage();
+	//CString Fetch(CString url);
 
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CLIPBOARDPLUS_DIALOG };
@@ -82,4 +86,6 @@ public:
 	afx_msg void OnTrayRestore();
 	afx_msg void OnTrayExit();
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+	afx_msg void OnMenuCheckforupdates();
+	afx_msg void OnMenuAbout();
 };

@@ -40,71 +40,47 @@ void CClipButton::OnKillFocus(CWnd* pNewWnd)
 
 void CClipButton::SetSkin(UINT uiNormal, UINT uiDisabled, COLORREF clrTextColor)
 {
-	//TRACE(TEXT("CGuiButton::SetSkin\n"));
-	// --------------------------------------
-	// Free previous allocated bitmaps
-	// --------------------------------------
 	m_NormalBitmapDC.DeleteObject();
 	m_DisabledBitmapDC.DeleteObject();
 
-	// --------------------------------------
-	// Load bitmaps corresponding to states
-	// --------------------------------------
-	if (uiNormal>0)
+	if (uiNormal > 0)
+	{
 		m_NormalBitmapDC.LoadBitmap(uiNormal);
-	if (uiDisabled>0)
+	}
+	if (uiDisabled > 0)
+	{
 		m_DisabledBitmapDC.LoadBitmap(uiDisabled);
+	}
 
 	m_TextColor = clrTextColor;
 }
 
 void CClipButton::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-
 	ASSERT(lpDrawItemStruct);
 
 	CDC btnDC;
-	btnDC.Attach(lpDrawItemStruct->hDC);	// get device context
+	btnDC.Attach(lpDrawItemStruct->hDC);
 
-	//CBitmap* pbitmapDC = NULL;
 	BITMAP bmpStruct;
 
 	CRect btnRect;
 	GetClientRect(&btnRect);
 
-	// --------------------------------------
-	// Draw the bitmap
-	// --------------------------------------
-
-	// Get the correct Bitmap
-	//if (!IsWindowEnabled())
-	//	pbitmapDC = &m_DisabledBitmapDC;
-	//else
-	//	pbitmapDC = &m_NormalBitmapDC;
-
-	// Select the bitmap into a Compatible DC
 	CDC *bmpDC = new CDC();
 	bmpDC->CreateCompatibleDC(&btnDC);
 	bmpDC->SelectObject(m_NormalBitmapDC);
-//	bmpDC->SelectObject(pbitmapDC);
+	m_NormalBitmapDC.GetBitmap(&bmpStruct);
 
-//	if (pbitmapDC != NULL)
-	{
-//		pbitmapDC->GetBitmap(&bmpStruct);
-		m_NormalBitmapDC.GetBitmap(&bmpStruct);
-		const int padding = 0;
-		btnDC.StretchBlt(padding, padding, btnRect.Width() - (2 * padding), btnRect.Height() - (2 * padding), bmpDC, 0, 0, bmpStruct.bmWidth, bmpStruct.bmHeight, SRCCOPY);
-	}
-
-	// --------------------------------------
-	// Draw the Text
-	// --------------------------------------
+	const int padding = 0;
+	btnDC.StretchBlt(padding, padding, btnRect.Width() - (2 * padding), btnRect.Height() - (2 * padding), 
+		bmpDC, 0, 0, bmpStruct.bmWidth, bmpStruct.bmHeight, SRCCOPY);
 
 	CRect textRect;
 	textRect = lpDrawItemStruct->rcItem;
 	textRect.left = textRect.left + 10;
 
-	int       oldMode = btnDC.SetBkMode(TRANSPARENT);
+	int oldMode = btnDC.SetBkMode(TRANSPARENT);
 	COLORREF oldColor = btnDC.SetTextColor(m_TextColor);
 
 	CSize sz;
@@ -117,8 +93,6 @@ void CClipButton::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 	btnDC.DeleteDC();
 	bmpDC->DeleteDC();
-	//oldbm->DeleteObject();
-	//pbitmapDC->DeleteObject();
 	delete bmpDC;
 
 }
@@ -150,7 +124,6 @@ void CClipButton::SetText(CString btext)
 
 void CClipButton::OnMouseHover(UINT nFlags, CPoint point)
 {
-	// TODO: Add your message handler code here and/or call default
 	SetSkin(IDB_BITMAP_CLIP_HOT, IDB_BITMAP_CLIP_HOT, RGB(30, 30, 30));
 	Invalidate();
 

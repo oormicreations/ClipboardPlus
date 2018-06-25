@@ -6,6 +6,7 @@
 #include "ClipBoardPlus.h"
 #include "ClipBoardPlusDlg.h"
 #include "afxdialogex.h"
+#include "AboutDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -56,6 +57,8 @@ BEGIN_MESSAGE_MAP(CClipBoardPlusDlg, CDialogEx)
 	ON_COMMAND(ID_TRAY_RESTORE, &CClipBoardPlusDlg::OnTrayRestore)
 	ON_COMMAND(ID_TRAY_EXIT, &CClipBoardPlusDlg::OnTrayExit)
 	ON_WM_SHOWWINDOW()
+	ON_COMMAND(ID_MENU_CHECKFORUPDATES, &CClipBoardPlusDlg::OnMenuCheckforupdates)
+	ON_COMMAND(ID_MENU_ABOUT, &CClipBoardPlusDlg::OnMenuAbout)
 END_MESSAGE_MAP()
 
 
@@ -76,10 +79,7 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 		AfxMessageBox(_T("AddClipboardFormatListener failed!"));
 	}
 
-	//m_TimerInterval = 1000;
-	//KillTimer(m_Timer);
-	//m_Timer = SetTimer(WM_USER + 200, m_TimerInterval, NULL);
-
+	m_CBPVersion = 1;
 	m_PasswordMode = TRUE;
 	m_IsClipBoardPlusEvent = FALSE;
 	m_RightClickedButton = -1;
@@ -88,6 +88,8 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	SetupMinimizeToTray();
 	InitClips();
 	GetClip(); //get already present contents
+
+	m_NetHelper.ReportUsage(_T("ClipboardPlus"), _T("INST"));
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -211,7 +213,9 @@ CString CClipBoardPlusDlg::GetClipboardText()
 	if (!OpenClipboard())
 	{
 		//AfxMessageBox(_T("<Failed to access the clipboard>"));
-		return m_Clips[0]; //MS Word or Excel will cause problems by locking up the clipbroad many times. So return last clip in case of failure.
+		//MS Word or Excel will cause problems by locking up the clipbroad many times. 
+		//So return last clip in case of failure.
+		return m_Clips[0]; 
 	}
 
 	// Get handle of clipboard object for unicode text
@@ -402,7 +406,7 @@ void CClipBoardPlusDlg::OnMenuExit()
 
 void CClipBoardPlusDlg::OnMenuClear()
 {
-	ClearClip(m_RightClickedButton);
+	if (m_RightClickedButton >= 0) ClearClip(m_RightClickedButton);
 }
 
 
@@ -431,8 +435,12 @@ BOOL CClipBoardPlusDlg::IsPassword(CString clip)
 	//should not be too long, like a link etc
 	if (clip.GetLength() > 10) return FALSE;
 
-	TCHAR nums[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', L'०', L'१', L'२', L'३', L'४', L'५', L'६', L'७', L'८', L'९'}; //L'x' is necessary
-	TCHAR spl[] = { '~', '`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', '}', ']', ':', ';', '\"', '\'', '<', ',', '>', '.', '?', '/'}; //32
+	TCHAR nums[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
+		L'०', L'१', L'२', L'३', L'४', L'५', L'६', L'७', L'८', L'९'}; //L'x' is necessary
+
+	TCHAR spl[] = { '~', '`', '!', '@', '#', '$', '%', '^', '&', '*', 
+		'(', ')', '-', '_', '+', '=', '|', '\\', '{', '[', '}', ']',
+		':', ';', '\"', '\'', '<', ',', '>', '.', '?', '/'}; //32
 
 	BOOL hasnum = FALSE;
 	BOOL hasspl = FALSE;
@@ -480,7 +488,7 @@ void CClipBoardPlusDlg::OnMenuClearclipboard()
 
 void CClipBoardPlusDlg::OnMenuSave()
 {
-	SaveClips(m_Clips[m_RightClickedButton]);
+	if (m_RightClickedButton >= 0) SaveClips(m_Clips[m_RightClickedButton]);
 }
 
 
@@ -498,7 +506,8 @@ void CClipBoardPlusDlg::SaveClips(CString str)
 {
 	CString fname = CTime::GetCurrentTime().Format("Clips-%Y%m%d-%H%M%S.txt");
 
-	CFileDialog ResFileOpenDialog(false, _T("txt"), fname, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
+	CFileDialog ResFileOpenDialog(false, _T("txt"), fname, 
+		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
 	//ResFileOpenDialog.m_ofn.lpstrInitialDir = docpath;
 	INT_PTR res = ResFileOpenDialog.DoModal();
 	if (res == IDOK)
@@ -619,7 +628,7 @@ void CClipBoardPlusDlg::MaximizeFromTray()
 	SetForegroundWindow();
 	SetActiveWindow();
 	SetWindowPos(0, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE);
-	RedrawWindow(0, 0, RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);  // redraw t
+	RedrawWindow(0, 0, RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN); 
 
 }
 
@@ -655,3 +664,18 @@ void CClipBoardPlusDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 		}
 	}
 }
+
+
+void CClipBoardPlusDlg::OnMenuAbout()
+{
+	CAboutDlg aboutDlg;
+	aboutDlg.DoModal();
+}
+
+void CClipBoardPlusDlg::OnMenuCheckforupdates()
+{
+	m_NetHelper.Checkforupdates(m_CBPVersion, _T("https://oormi.in/software/cbp/updatecbp.txt"),
+		_T(" https://github.com/oormicreations/ClipboardPlus"), _T("Clipboard Plus App"));
+
+}
+

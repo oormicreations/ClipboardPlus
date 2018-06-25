@@ -36,6 +36,12 @@
     <ClInclude Include="ClipButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClipBoardPlus.cpp">
@@ -48,6 +54,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClipButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AboutDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NetHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -69,6 +81,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Clip02.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\OormiLogo.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
