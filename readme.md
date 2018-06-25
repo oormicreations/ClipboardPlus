@@ -10,7 +10,7 @@ Coming soon.
 
 _Download link_
 
-Coming soon.
+https://github.com/oormicreations/ClipboardPlus/releases
 
 _Features:_
 * Stores multiple clips as you copy.
