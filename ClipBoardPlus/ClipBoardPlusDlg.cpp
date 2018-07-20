@@ -429,11 +429,13 @@ void CClipBoardPlusDlg::OnMenuPasswordmode()
 
 BOOL CClipBoardPlusDlg::IsPassword(CString clip)
 {
+	if (clip.IsEmpty()) return FALSE;
+
 	//should not be more than one word
 	if (clip.Find(' ') >= 0) return FALSE;
 
 	//should not be too long, like a link etc
-	if (clip.GetLength() > 10) return FALSE;
+	if (clip.GetLength() > 16) return FALSE;
 
 	TCHAR nums[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
 		L'०', L'१', L'२', L'३', L'४', L'५', L'६', L'७', L'८', L'९'}; //L'x' is necessary
