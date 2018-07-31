@@ -59,6 +59,8 @@ BEGIN_MESSAGE_MAP(CClipBoardPlusDlg, CDialogEx)
 	ON_WM_SHOWWINDOW()
 	ON_COMMAND(ID_MENU_CHECKFORUPDATES, &CClipBoardPlusDlg::OnMenuCheckforupdates)
 	ON_COMMAND(ID_MENU_ABOUT, &CClipBoardPlusDlg::OnMenuAbout)
+	ON_COMMAND(ID_MENU_EDIT, &CClipBoardPlusDlg::OnMenuEdit)
+	ON_COMMAND(ID_MENU_OPENLINK, &CClipBoardPlusDlg::OnMenuOpenlink)
 END_MESSAGE_MAP()
 
 
@@ -435,7 +437,7 @@ BOOL CClipBoardPlusDlg::IsPassword(CString clip)
 	if (clip.Find(' ') >= 0) return FALSE;
 
 	//should not be too long, like a link etc
-	if (clip.GetLength() > 16) return FALSE;
+	if (clip.GetLength() > MIN_PASSWORD_SZ) return FALSE;
 
 	TCHAR nums[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
 		L'०', L'१', L'२', L'३', L'४', L'५', L'६', L'७', L'८', L'९'}; //L'x' is necessary
@@ -681,3 +683,33 @@ void CClipBoardPlusDlg::OnMenuCheckforupdates()
 
 }
 
+
+
+void CClipBoardPlusDlg::OnMenuEdit()
+{
+	CClipEditorDlg dlg;
+	if (m_RightClickedButton >= 0)
+	{
+		dlg.m_ClipText = m_Clips[m_RightClickedButton];
+
+		if (dlg.DoModal())
+		{
+			m_Clips[m_RightClickedButton] = dlg.m_ClipText;
+			m_ClipButton[m_RightClickedButton].SetText(m_Clips[m_RightClickedButton]);
+
+			if (m_RightClickedButton == 0)
+			{
+				SetClipboardText(m_Clips[m_RightClickedButton]);
+			}
+		}
+	}
+}
+
+
+void CClipBoardPlusDlg::OnMenuOpenlink()
+{
+	if (m_RightClickedButton >= 0)
+	{
+		ShellExecute(NULL, _T("open"), m_Clips[m_RightClickedButton], NULL, NULL, SW_SHOWNORMAL);
+	}
+}

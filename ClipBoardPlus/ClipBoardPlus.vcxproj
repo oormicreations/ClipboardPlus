@@ -194,6 +194,7 @@
     <ClInclude Include="ClipBoardPlus.h" />
     <ClInclude Include="ClipBoardPlusDlg.h" />
     <ClInclude Include="ClipButton.h" />
+    <ClInclude Include="ClipEditorDlg.h" />
     <ClInclude Include="NetHelper.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -204,6 +205,7 @@
     <ClCompile Include="ClipBoardPlus.cpp" />
     <ClCompile Include="ClipBoardPlusDlg.cpp" />
     <ClCompile Include="ClipButton.cpp" />
+    <ClCompile Include="ClipEditorDlg.cpp" />
     <ClCompile Include="NetHelper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

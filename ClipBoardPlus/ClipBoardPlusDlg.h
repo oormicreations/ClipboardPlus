@@ -5,9 +5,12 @@
 #pragma once
 #include "ClipButton.h"
 #include "NetHelper.h"
+#include "ClipEditorDlg.h"
+
 
 #define MAXCLIPS 5
 #define WM_TRAY_MESSAGE (WM_USER + 1)
+#define MIN_PASSWORD_SZ 16
 
 // CClipBoardPlusDlg dialog
 class CClipBoardPlusDlg : public CDialogEx
@@ -88,4 +91,6 @@ public:
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnMenuCheckforupdates();
 	afx_msg void OnMenuAbout();
+	afx_msg void OnMenuEdit();
+	afx_msg void OnMenuOpenlink();
 };
