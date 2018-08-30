@@ -61,6 +61,9 @@ BEGIN_MESSAGE_MAP(CClipBoardPlusDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_ABOUT, &CClipBoardPlusDlg::OnMenuAbout)
 	ON_COMMAND(ID_MENU_EDIT, &CClipBoardPlusDlg::OnMenuEdit)
 	ON_COMMAND(ID_MENU_OPENLINK, &CClipBoardPlusDlg::OnMenuOpenlink)
+	ON_COMMAND(ID_MENU_GETMOREFREEAPPS, &CClipBoardPlusDlg::OnMenuGetmorefreeapps)
+	ON_COMMAND(ID_MENU_ADD, &CClipBoardPlusDlg::OnMenuAdd)
+	ON_COMMAND(ID_MENU_STICKYNOTES, &CClipBoardPlusDlg::OnMenuStickynotes)
 END_MESSAGE_MAP()
 
 
@@ -81,7 +84,9 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 		AfxMessageBox(_T("AddClipboardFormatListener failed!"));
 	}
 
-	m_CBPVersion = 1;
+	m_CBPVersionMaj = 1;
+	m_CBPVersionMin = 1;
+
 	m_PasswordMode = TRUE;
 	m_IsClipBoardPlusEvent = FALSE;
 	m_RightClickedButton = -1;
@@ -91,7 +96,7 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	InitClips();
 	GetClip(); //get already present contents
 
-	m_NetHelper.ReportUsage(_T("ClipboardPlus"), _T("INST"));
+	m_NetHelper.ReportUsage(_T("ClipboardPlus"), m_CBPVersionMaj*10 + m_CBPVersionMin);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -678,7 +683,8 @@ void CClipBoardPlusDlg::OnMenuAbout()
 
 void CClipBoardPlusDlg::OnMenuCheckforupdates()
 {
-	m_NetHelper.Checkforupdates(m_CBPVersion, _T("https://oormi.in/software/cbp/updatecbp.txt"),
+	m_NetHelper.Checkforupdates(m_CBPVersionMaj, m_CBPVersionMin,
+		_T("https://oormi.in/software/cbp/updatecbp.txt"),
 		_T(" https://github.com/oormicreations/ClipboardPlus"), _T("Clipboard Plus App"));
 
 }
@@ -691,6 +697,7 @@ void CClipBoardPlusDlg::OnMenuEdit()
 	if (m_RightClickedButton >= 0)
 	{
 		dlg.m_ClipText = m_Clips[m_RightClickedButton];
+		dlg.m_IsStickyNote = FALSE;
 
 		if (dlg.DoModal())
 		{
@@ -710,6 +717,30 @@ void CClipBoardPlusDlg::OnMenuOpenlink()
 {
 	if (m_RightClickedButton >= 0)
 	{
-		ShellExecute(NULL, _T("open"), m_Clips[m_RightClickedButton], NULL, NULL, SW_SHOWNORMAL);
+		if (m_Clips[m_RightClickedButton].Find(_T("http")) >= 0)
+		{
+			ShellExecute(NULL, _T("open"), m_Clips[m_RightClickedButton], NULL, NULL, SW_SHOWNORMAL);
+		}
 	}
+}
+
+
+void CClipBoardPlusDlg::OnMenuGetmorefreeapps()
+{
+	ShellExecute(NULL, _T("open"), _T("https://github.com/oormicreations?tab=repositories"), NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+void CClipBoardPlusDlg::OnMenuAdd()
+{
+	// TODO: Add your command handler code here
+}
+
+
+void CClipBoardPlusDlg::OnMenuStickynotes()
+{
+	CClipEditorDlg dlg;
+	dlg.m_IsStickyNote = TRUE;
+	dlg.m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d\r\n"), m_CBPVersionMaj, m_CBPVersionMin);
+	dlg.DoModal();
 }

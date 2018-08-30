@@ -28,7 +28,7 @@ public:
 	CMenu m_MenuPopup, m_MenuTray;
 	NOTIFYICONDATA m_TrayData;
 	BOOL m_bMinimized;
-	int m_CBPVersion;
+	int m_CBPVersionMaj, m_CBPVersionMin;
 	CNetHelper m_NetHelper;
 
 	void InitClips();
@@ -93,4 +93,7 @@ public:
 	afx_msg void OnMenuAbout();
 	afx_msg void OnMenuEdit();
 	afx_msg void OnMenuOpenlink();
+	afx_msg void OnMenuGetmorefreeapps();
+	afx_msg void OnMenuAdd();
+	afx_msg void OnMenuStickynotes();
 };

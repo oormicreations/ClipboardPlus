@@ -40,6 +40,8 @@ https://github.com/oormicreations/ClipboardPlus/releases
 * Clicking on any of the preview clip loads it on to the clipboard.
 * Clear specific clips or clear all.
 * Save specific clips or save all as text file.
+* Open URLs directly from ClipboardPlus.
+* Edit clips
 * Remembers window position.
 * Can be minimized to the tray.
 * Minimal UI.

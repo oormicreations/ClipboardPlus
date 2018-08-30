@@ -1,6 +1,8 @@
 #pragma once
 #include "afxwin.h"
+#include "SysHelper.h"
 
+#define MAX_NOTES 100
 
 // CClipEditorDlg dialog
 
@@ -14,7 +16,7 @@ public:
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_DIALOG1 };
+	enum { IDD = IDD_DIALOG_EDIT };
 #endif
 
 protected:
@@ -22,8 +24,18 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+	CSysHelper m_SysHelper;
+	BOOL m_IsStickyNote;
 	CEdit m_ClipEd;
 	CString m_ClipText;
+	int m_NoteCount;
+	CString m_Notes[MAX_NOTES];
+	CString m_VerStr;
+
+	BOOL ReadStickyNotes();
+	BOOL ParseNotes(CString notes);
+
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedAddnote();
 };
