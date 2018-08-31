@@ -733,7 +733,14 @@ void CClipBoardPlusDlg::OnMenuGetmorefreeapps()
 
 void CClipBoardPlusDlg::OnMenuAdd()
 {
-	// TODO: Add your command handler code here
+	if (!m_Clips[m_RightClickedButton].IsEmpty())
+	{
+		CClipEditorDlg dlg;
+		dlg.m_IsStickyNote = TRUE;
+		dlg.m_AddThis = m_Clips[m_RightClickedButton];
+		dlg.m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
+		dlg.DoModal();
+	}
 }
 
 
@@ -741,6 +748,7 @@ void CClipBoardPlusDlg::OnMenuStickynotes()
 {
 	CClipEditorDlg dlg;
 	dlg.m_IsStickyNote = TRUE;
-	dlg.m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d\r\n"), m_CBPVersionMaj, m_CBPVersionMin);
+	dlg.m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
 	dlg.DoModal();
+
 }

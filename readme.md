@@ -42,10 +42,15 @@ https://github.com/oormicreations/ClipboardPlus/releases
 * Save specific clips or save all as text file.
 * Open URLs directly from ClipboardPlus.
 * Edit clips
+* Hides copied passwords automatically.
+
+* Built in Sticky Notes.
+* Send clips to Sticky Notes.
+
 * Remembers window position.
 * Can be minimized to the tray.
 * Minimal UI.
-* Hides copied passwords automatically.
+
 * Supported on MS Windows 7 to 10.
 * IDE MS VS 2015, C++, MFC
 

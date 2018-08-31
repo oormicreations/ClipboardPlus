@@ -103,7 +103,7 @@ BOOL CSysHelper::SetClipboardText(CString text)
 CString CSysHelper::ReadStringFromFile(CString filename)
 {
 	// Open the file with the specified encoding, restrict to utf-8
-	FILE *fStream;
+/*	FILE *fStream;
 	errno_t e = _tfopen_s(&fStream, filename, _T("rt,ccs=UTF-8"));
 	if (e != 0)
 	{
@@ -112,7 +112,7 @@ CString CSysHelper::ReadStringFromFile(CString filename)
 	}
 	CStdioFile f(fStream);  // open the file from this stream
 
-	UINT len = (UINT)f.GetLength() * sizeof(TCHAR);
+	UINT len = (UINT)f.GetLength();
 	TCHAR *buf = new TCHAR[len + 1];
 	ZeroMemory(buf, len + 1);
 
@@ -122,7 +122,33 @@ CString CSysHelper::ReadStringFromFile(CString filename)
 	delete buf;
 
 	return str;
+	*/
 
+	CFile file;
+	file.Open(filename, CFile::modeRead);
+
+	int len = file.GetLength();
+	char * buf = new char[len + 1];
+
+	file.Read(buf, len);
+	file.Close();
+	
+	buf[len] = 0;
+
+
+	CString uni;
+	int cc = 0;
+	// get length (cc) of the new widechar excluding the \0 terminator first
+	if ((cc = MultiByteToWideChar(CP_UTF8, 0, buf, -1, NULL, 0) - 1) > 0)
+	{
+		// convert
+		wchar_t *buf1 = uni.GetBuffer(cc);
+		if (buf1) MultiByteToWideChar(CP_UTF8, 0, buf, -1, buf1, cc);
+		uni.ReleaseBuffer();
+	}
+
+
+	return uni;
 }
 
 CString CSysHelper::GetFileContent()
