@@ -30,6 +30,7 @@ public:
 	BOOL m_bMinimized;
 	int m_CBPVersionMaj, m_CBPVersionMin;
 	CNetHelper m_NetHelper;
+	CClipEditorDlg *m_EdDlg;
 
 	void InitClips();
 	void GetClip();
@@ -45,6 +46,7 @@ public:
 	void SetupMinimizeToTray();
 	void MinimizeToTray();
 	void MaximizeFromTray();
+	void DisplayNotesDlg(BOOL isnotes, CString add);
 	//void ReportUsage();
 	//CString Fetch(CString url);
 

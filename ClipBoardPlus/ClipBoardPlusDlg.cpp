@@ -20,6 +20,7 @@ CClipBoardPlusDlg::CClipBoardPlusDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_CLIPBOARDPLUS_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_EdDlg = NULL;
 }
 
 void CClipBoardPlusDlg::DoDataExchange(CDataExchange* pDX)
@@ -91,7 +92,7 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	m_IsClipBoardPlusEvent = FALSE;
 	m_RightClickedButton = -1;
 	m_MenuPopup.LoadMenu(IDR_MENU_CBP);
-	
+
 	SetupMinimizeToTray();
 	InitClips();
 	GetClip(); //get already present contents
@@ -735,20 +736,40 @@ void CClipBoardPlusDlg::OnMenuAdd()
 {
 	if (!m_Clips[m_RightClickedButton].IsEmpty())
 	{
-		CClipEditorDlg dlg;
-		dlg.m_IsStickyNote = TRUE;
-		dlg.m_AddThis = m_Clips[m_RightClickedButton];
-		dlg.m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
-		dlg.DoModal();
+		////CClipEditorDlg dlg;
+		//m_EdDlg->m_IsStickyNote = TRUE;
+		//m_EdDlg->m_AddThis = m_Clips[m_RightClickedButton];
+		//m_EdDlg->m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
+		////dlg.DoModal();
+		//m_EdDlg->ShowWindow(SW_SHOWNORMAL);
+
+		DisplayNotesDlg(TRUE, m_Clips[m_RightClickedButton]);
+
+
 	}
 }
 
 
 void CClipBoardPlusDlg::OnMenuStickynotes()
 {
-	CClipEditorDlg dlg;
-	dlg.m_IsStickyNote = TRUE;
-	dlg.m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
-	dlg.DoModal();
+	DisplayNotesDlg(TRUE, _T(""));
+}
+
+
+void CClipBoardPlusDlg::DisplayNotesDlg(BOOL isnotes, CString add)
+{
+	if (m_EdDlg == NULL)
+	{
+		m_EdDlg = new CClipEditorDlg(this);;
+		m_EdDlg->Create(IDD_DIALOG_EDIT, this);
+	}
+
+	m_EdDlg->m_IsStickyNote = isnotes;
+	m_EdDlg->m_VerStr.Format(_T("CBP Sticky Clips Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
+	m_EdDlg->m_AddThis = add;
+	m_EdDlg->ReadStickyNotes();
+	//m_EdDlg->ShowWindow(SW_SHOWNORMAL);
+
+	m_EdDlg->AnimateWindow(400, AW_SLIDE| AW_VER_POSITIVE);
 
 }

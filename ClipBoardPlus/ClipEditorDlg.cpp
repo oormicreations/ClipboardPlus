@@ -15,6 +15,7 @@ CClipEditorDlg::CClipEditorDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(IDD_DIALOG_EDIT, pParent)
 {
 	m_BkBrush = 0;
+	m_EdFont = NULL;
 }
 
 CClipEditorDlg::~CClipEditorDlg()
@@ -37,6 +38,8 @@ BEGIN_MESSAGE_MAP(CClipEditorDlg, CDialog)
 	ON_BN_CLICKED(IDCANCEL, &CClipEditorDlg::OnBnClickedCancel)
 	ON_WM_CTLCOLOR()
 	ON_WM_DESTROY()
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_COPYNOTE, &CClipEditorDlg::OnBnClickedCopynote)
 END_MESSAGE_MAP()
 
 
@@ -51,7 +54,14 @@ BOOL CClipEditorDlg::OnInitDialog()
 	CWnd *pwnd = GetParent();
 	CRect wrect;
 	pwnd->GetWindowRect(&wrect);
+	int ht = wrect.Height();
+	wrect.top = wrect.top + ht;
+	wrect.bottom = wrect.bottom + ht;
 	MoveWindow(wrect);
+
+	//GetDlgItem(IDC_EDIT_NOTECOUNT)->MoveWindow(14, 0, wrect.Width()/2, 14);
+	//GetDlgItem(IDC_EDIT_NOTEINFO)->MoveWindow(wrect.Width() / 2, 0, wrect.Width()-14, 14);
+
 
 	SetNotesFont();
 
@@ -65,9 +75,9 @@ BOOL CClipEditorDlg::OnInitDialog()
 		GetDlgItem(IDC_PRENOTE)->ShowWindow(SW_SHOW);
 		GetDlgItem(IDC_NEXTNOTE)->ShowWindow(SW_SHOW);	
 
-		this->SetWindowText(_T("Sticky Notes"));
+		this->SetWindowText(_T("Sticky Clips"));
 
-		ReadStickyNotes();
+		//ReadStickyNotes();
 
 	}
 	else
@@ -81,18 +91,18 @@ BOOL CClipEditorDlg::OnInitDialog()
 
 void CClipEditorDlg::SetNotesFont()
 {
-	CString fontname = _T("Segoe Print");
-	int fontsz = 24;
+	CString fontname = _T("Georgia");
+	int fontsz = 16;
 	if (!m_SysHelper.IsFontInstalled(fontname))
 	{
 		fontname = _T("Courier New");
 		fontsz = 16;
 	}
 
-	CFont *font = new CFont;
-	font->CreateFontW(fontsz, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, fontname);
+	 m_EdFont = new CFont;
+	 m_EdFont->CreateFontW(fontsz, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, fontname);
 
-	m_ClipEd.SetFont(font);
+	m_ClipEd.SetFont(m_EdFont);
 }
 
 void CClipEditorDlg::OnBnClickedOk()
@@ -110,9 +120,11 @@ BOOL CClipEditorDlg::ReadStickyNotes()
 	if (!m_SysHelper.m_FileName.IsEmpty())
 	{
 		BOOL res = m_SysHelper.CreateFileAndInit(m_SysHelper.m_FileName, m_VerStr);
+
 		if (res)
 		{
 			CString notes = m_SysHelper.ReadStringFromFile(m_SysHelper.m_FileName);
+
 			if (!notes.IsEmpty())
 			{
 				if (ParseNotes(notes))
@@ -122,7 +134,7 @@ BOOL CClipEditorDlg::ReadStickyNotes()
 				}
 				else
 				{
-					m_ClipEd.SetWindowText(_T("How does it work?\r\n✕ : Clear\r\n+ : Save note\r\n← : Next note\r\n→ : Previous note\r\n- : Delete note\r\n✓ : Close"));
+					m_ClipEd.SetWindowText(_T("How does it work?\r\n\r\n✕ : Clear\r\nC : Copy\r\n+ : Save note\r\n← : Next note\r\n→ : Previous note\r\n- : Delete note\r\n✓ : Close"));
 				}
 			}
 
@@ -150,7 +162,7 @@ BOOL CClipEditorDlg::ParseNotes(CString notes)
 	token = token + separator;
 	if (token.Compare(m_VerStr))
 	{
-		AfxMessageBox(_T("The sticky notes file has some problems."));
+		AfxMessageBox(_T("The sticky clips file has some problems."));
 		return FALSE;
 	}
 
@@ -267,9 +279,9 @@ HBRUSH CClipEditorDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	// TODO:  Change any attributes of the DC here
 	int id = pWnd->GetDlgCtrlID();
 
-	if (id == IDC_EDIT_CLIP)
+	if ((id == IDC_EDIT_CLIP))// || (id == IDC_EDIT_NOTECOUNT) || (id == IDC_EDIT_NOTEINFO))
 	{
-		COLORREF bkc = RGB(255, 255, 190);
+		COLORREF bkc = RGB(255, 255, 220);
 		pDC->SetTextColor(RGB(0, 0, 170));
 		pDC->SetBkColor(bkc);
 
@@ -291,6 +303,9 @@ void CClipEditorDlg::OnDestroy()
 		DeleteObject(m_BkBrush);
 		m_BkBrush = NULL;
 	}
+
+	if(m_EdFont!=NULL) delete m_EdFont;
+	delete this;
 }
 
 void CClipEditorDlg::DisplayCount()
@@ -298,4 +313,27 @@ void CClipEditorDlg::DisplayCount()
 	CString str;
 	str.Format(_T("%03d | %03d"), m_DispNote+1, m_NoteCount);
 	SetDlgItemText(IDC_EDIT_NOTECOUNT, str);
+
+	CString time = CTime::GetCurrentTime().Format("%Y-%m-%d  %H:%M:%S");
+	SetDlgItemText(IDC_EDIT_NOTEINFO, time);
+}
+
+
+void CClipEditorDlg::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+					   // TODO: Add your message handler code here
+					   // Do not call CDialog::OnPaint() for painting messages
+
+	CRect rect;
+	GetClientRect(&rect);
+	//dc.FillSolidRect(rect, RGB(255, 255, 190));
+}
+
+
+void CClipEditorDlg::OnBnClickedCopynote()
+{
+	CString str;
+	GetDlgItemText(IDC_EDIT_CLIP, str);
+	m_SysHelper.SetClipboardText(str);
 }

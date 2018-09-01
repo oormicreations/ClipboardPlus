@@ -147,7 +147,7 @@ CString CSysHelper::ReadStringFromFile(CString filename)
 		uni.ReleaseBuffer();
 	}
 
-
+	delete[] buf;
 	return uni;
 }
 
@@ -269,7 +269,7 @@ CString CSysHelper::GetAppFileName(UINT type)
 	if (!path.IsEmpty())
 	{
 		CString fname;
-		if (type == CBP_SNOTES_FILE)	fname = _T("\\CBP_StickyNotes.txt");
+		if (type == CBP_SNOTES_FILE)	fname = _T("\\CBP_StickyClips.txt");
 		if (fname.IsEmpty()) return _T("");
 
 		path = path + fname;

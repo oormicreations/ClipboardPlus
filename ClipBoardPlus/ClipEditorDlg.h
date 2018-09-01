@@ -33,6 +33,7 @@ public:
 	CString m_VerStr;
 	HBRUSH m_BkBrush;
 	CString m_AddThis;
+	CFont *m_EdFont;
 
 	BOOL ReadStickyNotes();
 	BOOL ParseNotes(CString notes);
@@ -48,4 +49,6 @@ public:
 	afx_msg void OnBnClickedCancel();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnDestroy();
+	afx_msg void OnPaint();
+	afx_msg void OnBnClickedCopynote();
 };
