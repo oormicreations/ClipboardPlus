@@ -34,11 +34,17 @@ public:
 	HBRUSH m_BkBrush;
 	CString m_AddThis;
 	CFont *m_EdFont;
+	BOOL m_HasChanged;
+	UINT m_Timer;
+	CString m_RemText;
 
 	BOOL ReadStickyNotes();
 	BOOL ParseNotes(CString notes);
 	void SetNotesFont();
-	void DisplayCount();
+	void DisplayNote();
+	void ShowNotesButtons(int show);
+	void ShowChangedNotice();
+	void Process(CString note);
 
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
@@ -51,4 +57,6 @@ public:
 	afx_msg void OnDestroy();
 	afx_msg void OnPaint();
 	afx_msg void OnBnClickedCopynote();
+	afx_msg void OnEnChangeEditClip();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };

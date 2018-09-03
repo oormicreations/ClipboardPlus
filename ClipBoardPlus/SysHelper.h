@@ -1,6 +1,7 @@
 #pragma once
 #define CBP_USER_FOLDER 1
 #define CBP_SNOTES_FILE 1
+#define CBP_ALERT_FILE 2
 #define TWIPS_PER_PT 20
 
 class CSysHelper

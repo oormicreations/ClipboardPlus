@@ -5,7 +5,8 @@
 #include "ClipBoardPlus.h"
 #include "ClipEditorDlg.h"
 #include "afxdialogex.h"
-
+#include <windows.h>
+#include "mmsystem.h"
 
 // CClipEditorDlg dialog
 
@@ -40,6 +41,8 @@ BEGIN_MESSAGE_MAP(CClipEditorDlg, CDialog)
 	ON_WM_DESTROY()
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_COPYNOTE, &CClipEditorDlg::OnBnClickedCopynote)
+	ON_EN_CHANGE(IDC_EDIT_CLIP, &CClipEditorDlg::OnEnChangeEditClip)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -64,29 +67,28 @@ BOOL CClipEditorDlg::OnInitDialog()
 
 
 	SetNotesFont();
+	m_HasChanged = FALSE;
 
-	if (m_IsStickyNote)
-	{
-		m_DispNote = 0;
-		m_NoteCount = 0;
-
-		GetDlgItem(IDC_ADDNOTE)->ShowWindow(SW_SHOW);
-		GetDlgItem(IDC_DELNOTE)->ShowWindow(SW_SHOW);
-		GetDlgItem(IDC_PRENOTE)->ShowWindow(SW_SHOW);
-		GetDlgItem(IDC_NEXTNOTE)->ShowWindow(SW_SHOW);	
-
-		this->SetWindowText(_T("Sticky Clips"));
-
-		//ReadStickyNotes();
-
-	}
-	else
-	{
-		m_ClipEd.SetWindowText(m_ClipText);
-	}
+	//if (m_IsStickyNote)
+	//{
+	//	//ShowNotesButtons();
+	//}
+	//else
+	//{
+	//	m_ClipEd.SetWindowText(m_ClipText);
+	//}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CClipEditorDlg::ShowNotesButtons(int show)
+{
+	GetDlgItem(IDC_ADDNOTE)->ShowWindow(show);
+	GetDlgItem(IDC_DELNOTE)->ShowWindow(show);
+	GetDlgItem(IDC_PRENOTE)->ShowWindow(show);
+	GetDlgItem(IDC_NEXTNOTE)->ShowWindow(show);
+	GetDlgItem(IDC_COPYNOTE)->ShowWindow(show);
 }
 
 void CClipEditorDlg::SetNotesFont()
@@ -107,14 +109,34 @@ void CClipEditorDlg::SetNotesFont()
 
 void CClipEditorDlg::OnBnClickedOk()
 {
-	m_ClipEd.GetWindowText(m_ClipText);
+	if (!m_IsStickyNote)
+	{
+		m_ClipEd.GetWindowText(m_ClipText);
+		m_SysHelper.SetClipboardText(m_ClipText);
+	}
+	else ShowChangedNotice();
 
 	CDialog::OnOK();
 }
 
+void CClipEditorDlg::ShowChangedNotice()
+{
+	if (m_HasChanged)
+	{
+		int res = AfxMessageBox(_T("Do you wish to save the edited clip?"), MB_YESNO);
+		if (res == IDYES)
+		{
+			OnBnClickedAddnote();
+		}
+		else m_HasChanged = FALSE;
+	}
+}
 
 BOOL CClipEditorDlg::ReadStickyNotes()
 {
+	m_DispNote = 0;
+	m_NoteCount = 0;
+
 	m_SysHelper.m_FileName = m_SysHelper.GetAppFileName(CBP_SNOTES_FILE);
 	
 	if (!m_SysHelper.m_FileName.IsEmpty())
@@ -130,11 +152,13 @@ BOOL CClipEditorDlg::ReadStickyNotes()
 				if (ParseNotes(notes))
 				{
 					m_DispNote = m_NoteCount - 1;
-					m_ClipEd.SetWindowText(m_Notes[m_DispNote]);
+					DisplayNote();
 				}
 				else
 				{
-					m_ClipEd.SetWindowText(_T("How does it work?\r\n\r\n✕ : Clear\r\nC : Copy\r\n+ : Save note\r\n← : Next note\r\n→ : Previous note\r\n- : Delete note\r\n✓ : Close"));
+					m_ClipEd.SetWindowText(_T("How does it work?\r\n\r\n\
+✕ : Clear\r\nC : Copy\r\n+ : Save note\r\n← : Next note\r\n→ : Previous note\r\n- : Delete note\r\n✓ : Close\
+\r\nset reminder 11:30 call someone\r\nset reminder 2h 15m go jogging and drop trash\r\nPress add + button to set a reminder as above"));
 				}
 			}
 
@@ -187,48 +211,56 @@ void CClipEditorDlg::OnBnClickedAddnote()
 		return;
 	}
 
-	CString note;
+	CString note, str;
 	m_ClipEd.GetWindowText(note);
+	int pos = m_Notes[m_DispNote].Find(_T("⧖"));
+	str = m_Notes[m_DispNote].Left(pos);
 
-	if (note == m_Notes[m_DispNote])
+	if (note == str)
 	{
-		AfxMessageBox(_T("Its the same note, change it to add!"));
+		AfxMessageBox(_T("Its the same note, change it and add!"));
 		return;
 	}
 
 	if (!note.IsEmpty())
 	{
+		Process(note);
+
 		CString time = CTime::GetCurrentTime().Format("%Y-%m-%d  %H:%M:%S");
 
-		m_Notes[m_NoteCount] = note;
-		m_SysHelper.SaveStringAppend(m_SysHelper.m_FileName, m_Notes[m_NoteCount] + _T("@@") + time + _T("←"));
+		m_Notes[m_NoteCount] = note + _T("⧖") + time;
+		m_SysHelper.SaveStringAppend(m_SysHelper.m_FileName, m_Notes[m_NoteCount] + _T("←"));
 		m_NoteCount++;
 		m_DispNote = m_NoteCount-1;
+		m_HasChanged = FALSE;
 
-		SetDlgItemText(IDC_EDIT_NOTEINFO, time);
-		DisplayCount();
+		DisplayNote();
 	}
 }
 
 
 void CClipEditorDlg::OnBnClickedPrenote()
 {
+	ShowChangedNotice();
+
 	if (m_DispNote > 0)
 	{
 		m_DispNote--;
 		m_ClipEd.SetWindowText(m_Notes[m_DispNote]);
+		DisplayNote();
 	}
-	DisplayCount();
 }
 
 
 void CClipEditorDlg::OnBnClickedNextnote()
 {
+	ShowChangedNotice();
+
 	if (m_DispNote < m_NoteCount - 1)
 	{
 		m_DispNote++;
 		m_ClipEd.SetWindowText(m_Notes[m_DispNote]);
-		DisplayCount();
+		DisplayNote();
 	}
 }
 
@@ -254,8 +286,19 @@ void CClipEditorDlg::OnBnClickedDelnote()
 
 	m_NoteCount--;
 
-	m_ClipEd.SetWindowText(m_Notes[m_DispNote]);
-	DisplayCount();
+	if (m_NoteCount < m_DispNote + 1)
+	{
+		m_DispNote = m_NoteCount - 1;
+	}
+
+	if (m_NoteCount < 1)
+	{
+		m_NoteCount = 0;
+		m_Notes[m_NoteCount] = _T("");
+		m_DispNote = 0;
+	}
+
+	DisplayNote();
 }
 
 
@@ -264,6 +307,8 @@ void CClipEditorDlg::OnBnClickedCancel()
 	if (m_IsStickyNote)
 	{
 		m_ClipEd.SetWindowText(_T(""));
+		SetDlgItemText(IDC_EDIT_NOTEINFO, _T(""));
+		SetDlgItemText(IDC_EDIT_NOTECOUNT, _T(""));
 	}
 	else
 	{
@@ -305,18 +350,29 @@ void CClipEditorDlg::OnDestroy()
 	}
 
 	if(m_EdFont!=NULL) delete m_EdFont;
+
+	//its modeless so delete manually
 	delete this;
 }
 
-void CClipEditorDlg::DisplayCount()
+
+void CClipEditorDlg::DisplayNote()
 {
 	CString str;
-	str.Format(_T("%03d | %03d"), m_DispNote+1, m_NoteCount);
+	if (m_NoteCount > 0)
+	{
+		str.Format(_T("%03d | %03d"), m_DispNote + 1, m_NoteCount);
+	}
 	SetDlgItemText(IDC_EDIT_NOTECOUNT, str);
 
-	CString time = CTime::GetCurrentTime().Format("%Y-%m-%d  %H:%M:%S");
-	SetDlgItemText(IDC_EDIT_NOTEINFO, time);
+	int pos = m_Notes[m_DispNote].Find(_T("⧖"));
+	str = m_Notes[m_DispNote].Right(m_Notes[m_DispNote].GetLength() - pos - 1);
+	SetDlgItemText(IDC_EDIT_NOTEINFO, str);
+
+	str = m_Notes[m_DispNote].Left(pos);
+	SetDlgItemText(IDC_EDIT_CLIP, str);
 }
+
 
 
 void CClipEditorDlg::OnPaint()
@@ -325,8 +381,8 @@ void CClipEditorDlg::OnPaint()
 					   // TODO: Add your message handler code here
 					   // Do not call CDialog::OnPaint() for painting messages
 
-	CRect rect;
-	GetClientRect(&rect);
+	//CRect rect;
+	//GetClientRect(&rect);
 	//dc.FillSolidRect(rect, RGB(255, 255, 190));
 }
 
@@ -336,4 +392,165 @@ void CClipEditorDlg::OnBnClickedCopynote()
 	CString str;
 	GetDlgItemText(IDC_EDIT_CLIP, str);
 	m_SysHelper.SetClipboardText(str);
+}
+
+
+void CClipEditorDlg::OnEnChangeEditClip()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialog::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	m_HasChanged = TRUE;
+}
+
+void CClipEditorDlg::Process(CString note)
+{
+	CString str, hr, min;
+	BOOL isduration = FALSE;
+	int pos = 0;
+
+	////test
+	//note = _T("Set reminder 12:52 x:yz");
+	//note = _T("Set reminder 2h 12m abch xyzm ");
+
+	note.MakeLower();
+	note.Replace(_T("\r\n"), _T(" "));
+	note.Replace(_T("  "), _T(" "));
+	note.Trim();
+
+	str = _T("set reminder");
+	pos = note.Find(str);
+	if (pos == 0)
+	{
+		note.Replace(str, _T(""));
+
+		pos = note.Find(_T(":"));
+		if ((pos > 0) && (pos < 5))
+		{
+			hr = note.Left(pos);
+			note.Replace(hr, _T(""));
+			hr.Trim();
+
+			pos = note.Find(_T(" "));
+			if ((pos > 0) && (pos < 4))
+			{
+				min = note.Left(pos);
+				note.Replace(min, _T(""));
+				min.Trim();
+				min.Trim(':');
+			}
+
+			note.Trim();
+		}
+		else
+		{
+			pos = note.Find(_T("h "));
+			if ((pos > 0) && (pos < 5))
+			{
+				hr = note.Left(pos);
+				note.Replace(hr + _T("h "), _T(""));
+				hr.Trim();
+			}
+
+			pos = note.Find(_T("m "));
+			if ((pos > 0) && (pos < 4))
+			{
+				min = note.Left(pos);
+				note.Replace(min + _T("m "), _T(""));
+				min.Trim();
+			}
+
+			isduration = TRUE;
+		}
+
+		int h = _ttoi(hr);
+		int m = _ttoi(min);
+		long duration = 0;
+
+		CTime time = CTime::GetCurrentTime();
+		int h1 = time.GetHour();
+		int m1 = time.GetMinute();
+		int totalmin = h1 * 60 + m1;
+		int remmin = h * 60 + m;
+
+		if (isduration) duration = (h * 60 + m);
+		else
+		{
+			if ((h > 23) || (m > 59))
+			{
+				AfxMessageBox(_T("Hour/min are out of range (23,59)"), MB_ICONERROR);
+				return;
+			}
+
+
+			if (remmin > totalmin)
+			{
+				duration = (remmin - totalmin);
+			}
+			else
+			{
+				AfxMessageBox(_T("Error: Reminder is in past."), MB_ICONERROR);
+				return;
+			}
+		}
+
+		if (duration < 1)
+		{
+			AfxMessageBox(_T("Error: Time duration was not found."), MB_ICONERROR);
+			return;
+		}
+		else
+		{
+			if (isduration)
+			{
+				h = h + h1;
+				if (h > 23)
+				{
+					h = h - 24;
+				}
+				m = m + m1;
+				if (m > 59)
+				{
+					h++;
+					m = m - 60;
+				}
+			}
+
+			int h3 = duration / 60;
+			int m3 = duration % 60;
+
+			m_RemText = note;
+			if (m_RemText.GetLength()>150) m_RemText.Truncate(150);
+
+			str.Format(_T("Reminder set for\r\n\r\n%s ...\r\n\r\nAt time %02d:%02d. Due in %d hours %d minutes"), m_RemText, h, m, h3, m3);
+		}
+		//str.Format(_T("Reminder set for\n%s\non %d:%d\n%d"), note, h, m, duration);
+		AfxMessageBox(str, MB_ICONINFORMATION);
+
+		KillTimer(m_Timer);
+		m_Timer = SetTimer(WM_USER + 1, duration * 60000, NULL);
+	}
+
+	else m_RemText.Empty();
+
+
+}
+
+void CClipEditorDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == WM_USER + 1)
+	{
+		KillTimer(m_Timer);
+		CString remalertfile = m_SysHelper.GetAppFileName(CBP_ALERT_FILE);
+		if (!remalertfile.IsEmpty()) PlaySound(remalertfile, NULL, SND_FILENAME);
+
+		MessageBox(m_RemText + _T(" ...\r\n\r\n(Check the sticky clip for more.)"), _T("ClipBoard Plus Reminder"), MB_ICONINFORMATION);
+		m_RemText.Empty();
+
+	}
+
+	CDialog::OnTimer(nIDEvent);
 }

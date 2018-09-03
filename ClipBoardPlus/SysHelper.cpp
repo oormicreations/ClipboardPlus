@@ -102,28 +102,6 @@ BOOL CSysHelper::SetClipboardText(CString text)
 
 CString CSysHelper::ReadStringFromFile(CString filename)
 {
-	// Open the file with the specified encoding, restrict to utf-8
-/*	FILE *fStream;
-	errno_t e = _tfopen_s(&fStream, filename, _T("rt,ccs=UTF-8"));
-	if (e != 0)
-	{
-		AfxMessageBox(filename + _T("\r\n\r\nError: This file could not be loaded."));
-		return _T("");
-	}
-	CStdioFile f(fStream);  // open the file from this stream
-
-	UINT len = (UINT)f.GetLength();
-	TCHAR *buf = new TCHAR[len + 1];
-	ZeroMemory(buf, len + 1);
-
-	f.Read(buf, len);
-	f.Close();
-	CString str(buf);
-	delete buf;
-
-	return str;
-	*/
-
 	CFile file;
 	file.Open(filename, CFile::modeRead);
 
@@ -270,6 +248,7 @@ CString CSysHelper::GetAppFileName(UINT type)
 	{
 		CString fname;
 		if (type == CBP_SNOTES_FILE)	fname = _T("\\CBP_StickyClips.txt");
+		if (type == CBP_ALERT_FILE)	fname = _T("\\rem.wav");
 		if (fname.IsEmpty()) return _T("");
 
 		path = path + fname;
@@ -282,6 +261,8 @@ CString CSysHelper::GetAppFileName(UINT type)
 CString CSysHelper::GetUserDocumentPath(UINT type)
 {
 	TCHAR my_documents[MAX_PATH];
+	for (int i = 0; i < MAX_PATH; i++)my_documents[i] = 0;
+
 	HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
 
 	if (result != S_OK)

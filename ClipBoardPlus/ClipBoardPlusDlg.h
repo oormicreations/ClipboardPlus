@@ -6,6 +6,7 @@
 #include "ClipButton.h"
 #include "NetHelper.h"
 #include "ClipEditorDlg.h"
+#include "SysHelper.h"
 
 
 #define MAXCLIPS 5

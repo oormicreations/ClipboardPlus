@@ -99,6 +99,16 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 
 	m_NetHelper.ReportUsage(_T("ClipboardPlus"), m_CBPVersionMaj*10 + m_CBPVersionMin);
 
+
+
+
+/////////////////
+
+
+//////////////
+
+
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -507,7 +517,7 @@ void CClipBoardPlusDlg::OnMenuSaveall()
 	CString str;
 	for (int i = 0; i < MAXCLIPS; i++)
 	{
-		str = str + "\r\n---------------------\r\n" + m_Clips[i];
+		str = str + "\r\n-------------------------------------------------------------------------------\r\n" + m_Clips[i];
 	}
 	SaveClips(str);
 }
@@ -516,10 +526,15 @@ void CClipBoardPlusDlg::SaveClips(CString str)
 {
 	CString fname = CTime::GetCurrentTime().Format("Clips-%Y%m%d-%H%M%S.txt");
 
+	CSysHelper shelp;
+	CString idir = shelp.GetUserDocumentPath(CBP_USER_FOLDER);
+
 	CFileDialog ResFileOpenDialog(false, _T("txt"), fname, 
 		OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("Text Files (*.txt)|*.txt|All Files (*.*)|*.*||"));
-	//ResFileOpenDialog.m_ofn.lpstrInitialDir = docpath;
+	ResFileOpenDialog.m_ofn.lpstrInitialDir = idir;
+
 	INT_PTR res = ResFileOpenDialog.DoModal();
+	
 	if (res == IDOK)
 	{
 		fname = ResFileOpenDialog.GetPathName();
@@ -538,7 +553,7 @@ void CClipBoardPlusDlg::SaveClips(CString str)
 
 void CClipBoardPlusDlg::OnMenuHelp()
 {
-	ShellExecute(NULL, _T("open"), _T("https://oormi.in/software/cbp/help.html"), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecute(NULL, _T("open"), _T("https://oormi.in/software/cbp/help110.html"), NULL, NULL, SW_SHOWNORMAL);
 }
 
 afx_msg LRESULT CClipBoardPlusDlg::OnTrayNotify(WPARAM wParam, LPARAM lParam)
@@ -694,22 +709,9 @@ void CClipBoardPlusDlg::OnMenuCheckforupdates()
 
 void CClipBoardPlusDlg::OnMenuEdit()
 {
-	CClipEditorDlg dlg;
-	if (m_RightClickedButton >= 0)
+	if ((m_RightClickedButton >= 0) && (!m_Clips[m_RightClickedButton].IsEmpty()))
 	{
-		dlg.m_ClipText = m_Clips[m_RightClickedButton];
-		dlg.m_IsStickyNote = FALSE;
-
-		if (dlg.DoModal())
-		{
-			m_Clips[m_RightClickedButton] = dlg.m_ClipText;
-			m_ClipButton[m_RightClickedButton].SetText(m_Clips[m_RightClickedButton]);
-
-			if (m_RightClickedButton == 0)
-			{
-				SetClipboardText(m_Clips[m_RightClickedButton]);
-			}
-		}
+		DisplayNotesDlg(FALSE, m_Clips[m_RightClickedButton]);
 	}
 }
 
@@ -736,16 +738,7 @@ void CClipBoardPlusDlg::OnMenuAdd()
 {
 	if (!m_Clips[m_RightClickedButton].IsEmpty())
 	{
-		////CClipEditorDlg dlg;
-		//m_EdDlg->m_IsStickyNote = TRUE;
-		//m_EdDlg->m_AddThis = m_Clips[m_RightClickedButton];
-		//m_EdDlg->m_VerStr.Format(_T("CBP Sticky Notes Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
-		////dlg.DoModal();
-		//m_EdDlg->ShowWindow(SW_SHOWNORMAL);
-
 		DisplayNotesDlg(TRUE, m_Clips[m_RightClickedButton]);
-
-
 	}
 }
 
@@ -761,15 +754,33 @@ void CClipBoardPlusDlg::DisplayNotesDlg(BOOL isnotes, CString add)
 	if (m_EdDlg == NULL)
 	{
 		m_EdDlg = new CClipEditorDlg(this);;
+		m_EdDlg->m_AddThis = _T("");
+		m_EdDlg->m_IsStickyNote = isnotes;
+		m_EdDlg->m_VerStr.Format(_T("CBP Sticky Clips Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
 		m_EdDlg->Create(IDD_DIALOG_EDIT, this);
 	}
 
+	m_EdDlg->m_AddThis = _T("");
 	m_EdDlg->m_IsStickyNote = isnotes;
-	m_EdDlg->m_VerStr.Format(_T("CBP Sticky Clips Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
-	m_EdDlg->m_AddThis = add;
-	m_EdDlg->ReadStickyNotes();
-	//m_EdDlg->ShowWindow(SW_SHOWNORMAL);
+	
+	if (isnotes)
+	{
+		m_EdDlg->m_AddThis = add;
+		m_EdDlg->ShowNotesButtons(SW_SHOW);
+		m_EdDlg->SetWindowText(_T("Sticky Clips"));
+		m_EdDlg->ReadStickyNotes();
+	}
+	else
+	{
+		m_EdDlg->ShowNotesButtons(SW_HIDE);
+		m_EdDlg->SetWindowText(_T("Edit Clip"));
+		m_EdDlg->m_ClipEd.SetWindowText(add);
+	}
 
-	m_EdDlg->AnimateWindow(400, AW_SLIDE| AW_VER_POSITIVE);
+
+	if (!m_EdDlg->AnimateWindow(400, AW_SLIDE | AW_VER_POSITIVE))
+	{
+		m_EdDlg->ShowWindow(SW_SHOWNORMAL);
+	}
 
 }
