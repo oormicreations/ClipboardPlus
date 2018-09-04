@@ -17,6 +17,9 @@ CClipEditorDlg::CClipEditorDlg(CWnd* pParent /*=NULL*/)
 {
 	m_BkBrush = 0;
 	m_EdFont = NULL;
+	m_RemCount = 0;
+
+	for (int i = 0; i < MAX_REMINDERS; i++) m_Timer[i] = 0;
 }
 
 CClipEditorDlg::~CClipEditorDlg()
@@ -68,15 +71,6 @@ BOOL CClipEditorDlg::OnInitDialog()
 
 	SetNotesFont();
 	m_HasChanged = FALSE;
-
-	//if (m_IsStickyNote)
-	//{
-	//	//ShowNotesButtons();
-	//}
-	//else
-	//{
-	//	m_ClipEd.SetWindowText(m_ClipText);
-	//}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
@@ -522,33 +516,48 @@ void CClipEditorDlg::Process(CString note)
 			int h3 = duration / 60;
 			int m3 = duration % 60;
 
-			m_RemText = note;
-			if (m_RemText.GetLength()>150) m_RemText.Truncate(150);
+			if (m_RemCount >= MAX_REMINDERS)
+			{
+				m_RemCount = 0;
+			}
 
-			str.Format(_T("Reminder set for\r\n\r\n%s ...\r\n\r\nAt time %02d:%02d. Due in %d hours %d minutes"), m_RemText, h, m, h3, m3);
+			m_RemText[m_RemCount] = note;
+			if (m_RemText[m_RemCount].GetLength()>150) m_RemText[m_RemCount].Truncate(150);
+
+			str.Format(_T("Reminder set for\r\n\r\n%s ...\r\n\r\nAt time %02d:%02d. Due in %d hours %d minutes"), m_RemText[m_RemCount], h, m, h3, m3);
 		}
 		//str.Format(_T("Reminder set for\n%s\non %d:%d\n%d"), note, h, m, duration);
+
+		KillTimer(m_Timer[m_RemCount]);
+		m_Timer[m_RemCount] = SetTimer(WM_USER + m_RemCount + 1, duration * 60000, NULL);
+		m_RemCount++;
+
 		AfxMessageBox(str, MB_ICONINFORMATION);
 
-		KillTimer(m_Timer);
-		m_Timer = SetTimer(WM_USER + 1, duration * 60000, NULL);
 	}
 
-	else m_RemText.Empty();
+	//else m_RemText.Empty();
 
 
 }
 
 void CClipEditorDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	if (nIDEvent == WM_USER + 1)
+
+	if ((nIDEvent < WM_USER + m_RemCount + 1) && (nIDEvent > WM_USER))
 	{
-		KillTimer(m_Timer);
+		UINT nrem = nIDEvent - WM_USER - 1;
+		
+		KillTimer(m_Timer[nrem]);
 		CString remalertfile = m_SysHelper.GetAppFileName(CBP_ALERT_FILE);
 		if (!remalertfile.IsEmpty()) PlaySound(remalertfile, NULL, SND_FILENAME);
 
-		MessageBox(m_RemText + _T(" ...\r\n\r\n(Check the sticky clip for more.)"), _T("ClipBoard Plus Reminder"), MB_ICONINFORMATION);
-		m_RemText.Empty();
+		//AfxGetApp()->GetMainWnd()-
+		CWnd *parent = GetParent();
+		if (parent)	parent->SendMessage(WM_CBP_RESTORE, 0, 0);
+
+		MessageBox(m_RemText[nrem] + _T(" ...\r\n\r\n(Check the sticky clip for more.)"), _T("ClipBoard Plus Reminder"), MB_ICONINFORMATION);
+		m_RemText[nrem].Empty();
 
 	}
 

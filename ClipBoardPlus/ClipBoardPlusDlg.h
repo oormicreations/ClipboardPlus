@@ -99,4 +99,6 @@ public:
 	afx_msg void OnMenuGetmorefreeapps();
 	afx_msg void OnMenuAdd();
 	afx_msg void OnMenuStickynotes();
+	afx_msg LRESULT RestoreHandler(WPARAM wp, LPARAM lp);
+
 };

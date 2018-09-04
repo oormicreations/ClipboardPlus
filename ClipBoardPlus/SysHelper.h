@@ -3,6 +3,7 @@
 #define CBP_SNOTES_FILE 1
 #define CBP_ALERT_FILE 2
 #define TWIPS_PER_PT 20
+#define WM_CBP_RESTORE WM_USER + 100
 
 class CSysHelper
 {

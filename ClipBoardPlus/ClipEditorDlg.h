@@ -3,6 +3,7 @@
 #include "SysHelper.h"
 
 #define MAX_NOTES 300
+#define MAX_REMINDERS 20
 
 // CClipEditorDlg dialog
 
@@ -35,8 +36,9 @@ public:
 	CString m_AddThis;
 	CFont *m_EdFont;
 	BOOL m_HasChanged;
-	UINT m_Timer;
-	CString m_RemText;
+	UINT m_Timer[MAX_REMINDERS];
+	UINT m_RemCount;
+	CString m_RemText[MAX_REMINDERS];
 
 	BOOL ReadStickyNotes();
 	BOOL ParseNotes(CString notes);

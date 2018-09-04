@@ -65,10 +65,16 @@ BEGIN_MESSAGE_MAP(CClipBoardPlusDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_GETMOREFREEAPPS, &CClipBoardPlusDlg::OnMenuGetmorefreeapps)
 	ON_COMMAND(ID_MENU_ADD, &CClipBoardPlusDlg::OnMenuAdd)
 	ON_COMMAND(ID_MENU_STICKYNOTES, &CClipBoardPlusDlg::OnMenuStickynotes)
+	ON_MESSAGE(WM_CBP_RESTORE, RestoreHandler)
 END_MESSAGE_MAP()
 
 
 // CClipBoardPlusDlg message handlers
+LRESULT CClipBoardPlusDlg::RestoreHandler(WPARAM wp, LPARAM lp)
+{
+	MaximizeFromTray();
+	return 0;
+}
 
 BOOL CClipBoardPlusDlg::OnInitDialog()
 {
@@ -98,15 +104,6 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	GetClip(); //get already present contents
 
 	m_NetHelper.ReportUsage(_T("ClipboardPlus"), m_CBPVersionMaj*10 + m_CBPVersionMin);
-
-
-
-
-/////////////////
-
-
-//////////////
-
 
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
