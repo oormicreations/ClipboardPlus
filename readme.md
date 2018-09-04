@@ -17,7 +17,7 @@ This tiny but useful utility is completely free and open sourced.
 
 **Usage and Help**
 
-https://oormi.in/software/cbp/help.html
+https://oormi.in/software/cbp/help110.html
 
 ---
 
