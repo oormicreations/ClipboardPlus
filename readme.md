@@ -44,8 +44,9 @@ https://github.com/oormicreations/ClipboardPlus/releases
 * Edit clips
 * Hides copied passwords automatically.
 
-* Built in Sticky Notes.
-* Send clips to Sticky Notes.
+* Built in Sticky Clips.
+* Send clips to Sticky Clips.
+* Set reminders from Sticky Clips.
 
 * Remembers window position.
 * Can be minimized to the tray.
