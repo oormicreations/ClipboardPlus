@@ -31,7 +31,7 @@ https://www.youtube.com/watch?v=PSwx6liKgnA
 
 https://github.com/oormicreations/ClipboardPlus/releases
 
-[![Github All Releases](https://img.shields.io/github/downloads/atom/atom/total.svg)]()
+[![Github All Releases](https://img.shields.io/github/downloads/oormicreations/ClipboardPlus/total.svg)]()
 
 ---
 
