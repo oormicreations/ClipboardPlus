@@ -1,6 +1,7 @@
 #pragma once
 #include "afxwin.h"
 #include "SysHelper.h"
+#include "afxcmn.h"
 
 #define MAX_NOTES 300
 #define MAX_REMINDERS 20
@@ -39,6 +40,9 @@ public:
 	UINT m_Timer[MAX_REMINDERS];
 	UINT m_RemCount;
 	CString m_RemText[MAX_REMINDERS];
+	CSliderCtrl m_SliderBrowse;
+	CToolTipCtrl* m_ToolTip;
+
 
 	BOOL ReadStickyNotes();
 	BOOL ParseNotes(CString notes);
@@ -47,6 +51,7 @@ public:
 	void ShowNotesButtons(int show);
 	void ShowChangedNotice();
 	void Process(CString note);
+	void SetToolTips();
 
 	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedOk();
@@ -61,4 +66,7 @@ public:
 	afx_msg void OnBnClickedCopynote();
 	afx_msg void OnEnChangeEditClip();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnEnKillfocusEditClip();
 };

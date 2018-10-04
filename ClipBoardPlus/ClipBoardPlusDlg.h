@@ -23,7 +23,7 @@ public:
 // Dialog Data
 	CString m_Clips[MAXCLIPS];
 	CClipButton m_ClipButton[MAXCLIPS];
-	BOOL m_PasswordMode;
+	BOOL m_PasswordMode, m_TopmostMode;
 	BOOL m_IsClipBoardPlusEvent;
 	int m_RightClickedButton;
 	CMenu m_MenuPopup, m_MenuTray;
@@ -48,8 +48,10 @@ public:
 	void MinimizeToTray();
 	void MaximizeFromTray();
 	void DisplayNotesDlg(BOOL isnotes, CString add);
-	//void ReportUsage();
-	//CString Fetch(CString url);
+	
+	void SaveToBackup();
+	void LoadFromBackup();
+	BOOL ParseClips(CString notes);
 
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CLIPBOARDPLUS_DIALOG };
@@ -101,4 +103,5 @@ public:
 	afx_msg void OnMenuStickynotes();
 	afx_msg LRESULT RestoreHandler(WPARAM wp, LPARAM lp);
 
+	afx_msg void OnMenuRemainontop();
 };

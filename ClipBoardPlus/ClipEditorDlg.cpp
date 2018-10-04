@@ -30,6 +30,7 @@ void CClipEditorDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT_CLIP, m_ClipEd);
+	DDX_Control(pDX, IDC_SLIDER_BROWSE, m_SliderBrowse);
 }
 
 
@@ -46,6 +47,8 @@ BEGIN_MESSAGE_MAP(CClipEditorDlg, CDialog)
 	ON_BN_CLICKED(IDC_COPYNOTE, &CClipEditorDlg::OnBnClickedCopynote)
 	ON_EN_CHANGE(IDC_EDIT_CLIP, &CClipEditorDlg::OnEnChangeEditClip)
 	ON_WM_TIMER()
+	ON_WM_VSCROLL()
+	ON_EN_KILLFOCUS(IDC_EDIT_CLIP, &CClipEditorDlg::OnEnKillfocusEditClip)
 END_MESSAGE_MAP()
 
 
@@ -68,9 +71,12 @@ BOOL CClipEditorDlg::OnInitDialog()
 	//GetDlgItem(IDC_EDIT_NOTECOUNT)->MoveWindow(14, 0, wrect.Width()/2, 14);
 	//GetDlgItem(IDC_EDIT_NOTEINFO)->MoveWindow(wrect.Width() / 2, 0, wrect.Width()-14, 14);
 
-
 	SetNotesFont();
 	m_HasChanged = FALSE;
+
+	m_SliderBrowse.SetRange(0, 100);
+
+	SetToolTips();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
@@ -80,9 +86,11 @@ void CClipEditorDlg::ShowNotesButtons(int show)
 {
 	GetDlgItem(IDC_ADDNOTE)->ShowWindow(show);
 	GetDlgItem(IDC_DELNOTE)->ShowWindow(show);
-	GetDlgItem(IDC_PRENOTE)->ShowWindow(show);
-	GetDlgItem(IDC_NEXTNOTE)->ShowWindow(show);
+	//GetDlgItem(IDC_PRENOTE)->ShowWindow(show);
+	//GetDlgItem(IDC_NEXTNOTE)->ShowWindow(show);
 	GetDlgItem(IDC_COPYNOTE)->ShowWindow(show);
+	GetDlgItem(IDCANCEL)->ShowWindow(!show);
+	m_SliderBrowse.ShowWindow(show);
 }
 
 void CClipEditorDlg::SetNotesFont()
@@ -108,7 +116,24 @@ void CClipEditorDlg::OnBnClickedOk()
 		m_ClipEd.GetWindowText(m_ClipText);
 		m_SysHelper.SetClipboardText(m_ClipText);
 	}
-	else ShowChangedNotice();
+	else
+	{
+		//ShowChangedNotice();
+		if (m_HasChanged)
+		{
+			if (m_NoteCount > 0)
+			{
+				CString notes = m_VerStr;
+				for (int n = 0; n < m_NoteCount; n++)
+				{
+					if (!m_Notes[n].IsEmpty()) notes = notes + m_Notes[n] + _T("←");
+				}
+
+				m_SysHelper.SaveString(m_SysHelper.m_FileName, notes);
+			}
+		}
+
+	}
 
 	CDialog::OnOK();
 }
@@ -151,9 +176,14 @@ BOOL CClipEditorDlg::ReadStickyNotes()
 				else
 				{
 					m_ClipEd.SetWindowText(_T("How does it work?\r\n\r\n\
-✕ : Clear\r\nC : Copy\r\n+ : Save note\r\n← : Next note\r\n→ : Previous note\r\n- : Delete note\r\n✓ : Close\
+C : Copy Clip\r\n+ : New Clip\r\n- : Delete note\r\n✓ : Close\r\nSlider: Browse\
 \r\nset reminder 11:30 call someone\r\nset reminder 2h 15m go jogging and drop trash\r\nPress add + button to set a reminder as above"));
 				}
+
+				m_SliderBrowse.SetRange(1, m_NoteCount);
+				m_SliderBrowse.SetPos(m_NoteCount);
+
+				return TRUE;
 			}
 
 			if (!m_AddThis.IsEmpty())
@@ -178,11 +208,13 @@ BOOL CClipEditorDlg::ParseNotes(CString notes)
 	token = notes.Tokenize(separator, start);
 
 	token = token + separator;
-	if (token.Compare(m_VerStr))
-	{
-		AfxMessageBox(_T("The sticky clips file has some problems."));
-		return FALSE;
-	}
+
+	//Disable ver check for this ver
+	//if (token.Compare(m_VerStr))
+	//{
+	//	AfxMessageBox(_T("The sticky clips file has some problems."));
+	//	return FALSE;
+	//}
 
 	while (start >= 0)
 	{
@@ -205,31 +237,20 @@ void CClipEditorDlg::OnBnClickedAddnote()
 		return;
 	}
 
+	m_ClipEd.SetWindowText(_T(""));
+
 	CString note, str;
-	m_ClipEd.GetWindowText(note);
-	int pos = m_Notes[m_DispNote].Find(_T("⧖"));
-	str = m_Notes[m_DispNote].Left(pos);
 
-	if (note == str)
-	{
-		AfxMessageBox(_T("Its the same note, change it and add!"));
-		return;
-	}
+	CString time = CTime::GetCurrentTime().Format("%Y-%m-%d  %H:%M:%S");
 
-	if (!note.IsEmpty())
-	{
-		Process(note);
+	m_Notes[m_NoteCount] = note + _T("⧖") + time;
+	m_NoteCount++;
+	m_DispNote = m_NoteCount - 1;
 
-		CString time = CTime::GetCurrentTime().Format("%Y-%m-%d  %H:%M:%S");
+	m_SliderBrowse.SetRange(1, m_NoteCount);
+	m_SliderBrowse.SetPos(m_NoteCount);
 
-		m_Notes[m_NoteCount] = note + _T("⧖") + time;
-		m_SysHelper.SaveStringAppend(m_SysHelper.m_FileName, m_Notes[m_NoteCount] + _T("←"));
-		m_NoteCount++;
-		m_DispNote = m_NoteCount-1;
-		m_HasChanged = FALSE;
-
-		DisplayNote();
-	}
+	DisplayNote();
 }
 
 
@@ -292,6 +313,8 @@ void CClipEditorDlg::OnBnClickedDelnote()
 		m_DispNote = 0;
 	}
 
+	m_SliderBrowse.SetRange(1, m_NoteCount);
+
 	DisplayNote();
 }
 
@@ -344,6 +367,7 @@ void CClipEditorDlg::OnDestroy()
 	}
 
 	if(m_EdFont!=NULL) delete m_EdFont;
+	if (m_ToolTip) delete m_ToolTip;
 
 	//its modeless so delete manually
 	delete this;
@@ -409,6 +433,8 @@ void CClipEditorDlg::Process(CString note)
 	////test
 	//note = _T("Set reminder 12:52 x:yz");
 	//note = _T("Set reminder 2h 12m abch xyzm ");
+	pos = note.Find(_T("⧖"));
+	note = note.Left(pos);
 
 	note.MakeLower();
 	note.Replace(_T("\r\n"), _T(" "));
@@ -552,7 +578,6 @@ void CClipEditorDlg::OnTimer(UINT_PTR nIDEvent)
 		CString remalertfile = m_SysHelper.GetAppFileName(CBP_ALERT_FILE);
 		if (!remalertfile.IsEmpty()) PlaySound(remalertfile, NULL, SND_FILENAME);
 
-		//AfxGetApp()->GetMainWnd()-
 		CWnd *parent = GetParent();
 		if (parent)	parent->SendMessage(WM_CBP_RESTORE, 0, 0);
 
@@ -562,4 +587,73 @@ void CClipEditorDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CDialog::OnTimer(nIDEvent);
+}
+
+
+
+
+void CClipEditorDlg::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	if (pScrollBar == (CScrollBar*)&m_SliderBrowse)
+	{
+		//if ((nSBCode == SB_THUMBPOSITION) || (nSBCode == SB_THUMBTRACK))
+		//if (nSBCode != SB_ENDSCROLL)
+		//{
+			m_DispNote = m_SliderBrowse.GetPos() - 1; //nPos - 1;
+			if (m_DispNote < 0) m_DispNote = 0;
+			if (m_DispNote >= MAX_NOTES)m_DispNote = MAX_NOTES - 1;
+			if (m_DispNote >= m_NoteCount)m_DispNote = m_NoteCount - 1;
+			DisplayNote();
+		//}
+	}
+
+	CDialog::OnVScroll(nSBCode, nPos, pScrollBar);
+}
+
+
+void CClipEditorDlg::SetToolTips()
+{
+	m_ToolTip = new CToolTipCtrl();
+	m_ToolTip->Create(this);
+
+	int buttonids[] = { IDCANCEL, IDC_COPYNOTE, IDC_ADDNOTE, IDC_DELNOTE, IDOK, IDC_SLIDER_BROWSE };
+	CString tips[] = { _T("Cancel"), _T("Copy Clip"),  _T("Add New Clip"),  _T("Delete Clip"),  _T("Save and Close"),  _T("Browse") };
+	int nbuttons = 6;
+
+	for (int i = 0; i < nbuttons; i++)
+	{
+		CWnd* pWnd = GetDlgItem(buttonids[i]);
+		m_ToolTip->AddTool(pWnd, tips[i]);
+	}
+
+	m_ToolTip->Activate(TRUE);
+}
+
+BOOL CClipEditorDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (m_ToolTip != NULL)
+	{
+		m_ToolTip->RelayEvent(pMsg);
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
+}
+
+
+void CClipEditorDlg::OnEnKillfocusEditClip()
+{
+	if (m_HasChanged)
+	{
+		CString note;
+		m_ClipEd.GetWindowText(note);
+		if (!note.IsEmpty())
+		{
+			CString time = CTime::GetCurrentTime().Format("%Y-%m-%d  %H:%M:%S");
+			m_Notes[m_DispNote] = note + _T("⧖") + time;
+			Process(m_Notes[m_DispNote]);
+		}
+
+	}
 }

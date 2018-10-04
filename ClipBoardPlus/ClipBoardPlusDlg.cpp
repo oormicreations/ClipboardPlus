@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CClipBoardPlusDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_ADD, &CClipBoardPlusDlg::OnMenuAdd)
 	ON_COMMAND(ID_MENU_STICKYNOTES, &CClipBoardPlusDlg::OnMenuStickynotes)
 	ON_MESSAGE(WM_CBP_RESTORE, RestoreHandler)
+	ON_COMMAND(ID_MENU_REMAINONTOP, &CClipBoardPlusDlg::OnMenuRemainontop)
 END_MESSAGE_MAP()
 
 
@@ -92,11 +93,13 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	}
 
 	m_CBPVersionMaj = 1;
-	m_CBPVersionMin = 1;
+	m_CBPVersionMin = 2;
 
 	m_PasswordMode = TRUE;
 	m_IsClipBoardPlusEvent = FALSE;
+	m_TopmostMode = FALSE;
 	m_RightClickedButton = -1;
+
 	m_MenuPopup.LoadMenu(IDR_MENU_CBP);
 
 	SetupMinimizeToTray();
@@ -104,6 +107,7 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	GetClip(); //get already present contents
 
 	m_NetHelper.ReportUsage(_T("ClipboardPlus"), m_CBPVersionMaj*10 + m_CBPVersionMin);
+
 
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -152,6 +156,8 @@ void CClipBoardPlusDlg::InitClips()
 		m_ClipButton[i].SetSkin(IDB_BITMAP_CLIP_COLD, IDB_BITMAP_CLIP_COLD, RGB(60, 60, 60));
 		m_Clips[i] = _T("");
 	}
+
+	LoadFromBackup();
 }
 
 void CClipBoardPlusDlg::ClearClip(int nclip)
@@ -178,10 +184,10 @@ void CClipBoardPlusDlg::GetClip()
 	CString tmpClip;
 	CString newClip = GetClipboardText();
 
-	if (m_Clips[0] == newClip)
-	{
-		return;
-	}
+	//if (m_Clips[0] == newClip)
+	//{
+	//	return;
+	//}
 
 	if (!m_Clips[0].IsEmpty())
 	{
@@ -198,6 +204,8 @@ void CClipBoardPlusDlg::GetClip()
 	m_ClipButton[0].SetSkin(IDB_BITMAP_CLIP_HOT, IDB_BITMAP_CLIP_HOT, RGB(30, 30, 30));
 
 	MaskClips();
+
+	SaveToBackup();//persistant loading
 }
 
 
@@ -421,7 +429,11 @@ void CClipBoardPlusDlg::OnMenuExit()
 
 void CClipBoardPlusDlg::OnMenuClear()
 {
-	if (m_RightClickedButton >= 0) ClearClip(m_RightClickedButton);
+	if (m_RightClickedButton >= 0)
+	{
+		ClearClip(m_RightClickedButton);
+		SaveToBackup();
+	}
 }
 
 
@@ -431,6 +443,7 @@ void CClipBoardPlusDlg::OnMenuClearall()
 	{
 		ClearClip(i);
 	}
+	SaveToBackup();
 }
 
 
@@ -709,6 +722,7 @@ void CClipBoardPlusDlg::OnMenuEdit()
 	if ((m_RightClickedButton >= 0) && (!m_Clips[m_RightClickedButton].IsEmpty()))
 	{
 		DisplayNotesDlg(FALSE, m_Clips[m_RightClickedButton]);
+		SaveToBackup();
 	}
 }
 
@@ -775,9 +789,83 @@ void CClipBoardPlusDlg::DisplayNotesDlg(BOOL isnotes, CString add)
 	}
 
 
-	if (!m_EdDlg->AnimateWindow(400, AW_SLIDE | AW_VER_POSITIVE))
-	{
+	//if (!m_EdDlg->AnimateWindow(400, AW_SLIDE | AW_VER_POSITIVE))
+	//{
 		m_EdDlg->ShowWindow(SW_SHOWNORMAL);
+	//}
+
+}
+
+void CClipBoardPlusDlg::OnMenuRemainontop()
+{
+	m_TopmostMode = !m_TopmostMode;
+	m_MenuPopup.CheckMenuItem(ID_MENU_REMAINONTOP, (MF_CHECKED * (UINT)m_TopmostMode) | MF_BYCOMMAND);
+
+	if(m_TopmostMode) SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	else SetWindowPos(&wndBottom, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+}
+
+void CClipBoardPlusDlg::SaveToBackup()
+{
+	CString sClips;
+	sClips.Format(_T("CBP Ver %d.%d"), m_CBPVersionMaj, m_CBPVersionMin);
+
+	for (int i = 0; i < MAXCLIPS; i++)
+	{
+		if(!m_Clips[i].IsEmpty()) sClips = sClips + _T("←") + m_Clips[i];
 	}
 
+	CSysHelper SysHelper;
+	SysHelper.SaveString(SysHelper.GetAppFileName(CBP_BACKUP_FILE), sClips);
+}
+
+void CClipBoardPlusDlg::LoadFromBackup()
+{
+	CSysHelper SysHelper;
+
+	SysHelper.m_FileName = SysHelper.GetAppFileName(CBP_BACKUP_FILE);
+
+	if (!SysHelper.m_FileName.IsEmpty())
+	{
+		CString sClips = SysHelper.ReadStringFromFile(SysHelper.m_FileName, FALSE);
+
+		if (!sClips.IsEmpty())
+		{
+			if (!ParseClips(sClips))
+			{
+				return;
+			}
+		}
+	}
+
+}
+
+BOOL CClipBoardPlusDlg::ParseClips(CString clips)
+{
+	int iCount = 0;
+	int iStart = 0;
+	CString token;
+	CString separator = _T("←");
+	token = clips.Tokenize(separator, iStart);
+
+	CString sVer;
+	sVer.Format(_T("CBP Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
+
+	token = token + separator;
+	if (token.Compare(sVer))
+	{
+		AfxMessageBox(_T("The backup file has some problems."));
+		return FALSE;
+	}
+
+	while (iStart >= 0)
+	{
+		m_Clips[iCount] = clips.Tokenize(separator, iStart);
+		iCount++;
+		if (iCount >= MAXCLIPS)break;
+	}
+	iCount--;
+
+	if (iCount<1)return FALSE;
+	return TRUE;
 }

@@ -11,6 +11,8 @@ Clicking on a clip loads it back into the clipboard and it is ready for pasting 
 
 To explore more features and functions of this utility, right click on it.
 
+It has a built in Sticky Note tool in which the clips can be stored, notes can be added and reminders can be set.
+
 This tiny but useful utility is completely free and open sourced. 
 
 ---
@@ -56,6 +58,18 @@ https://github.com/oormicreations/ClipboardPlus/releases
 
 * Supported on MS Windows 7 to 10.
 * IDE MS VS 2015, C++, MFC
+
+---
+
+**What is new in version 1.2**
+
+* Always on top option
+* Persistant clips (Saves and displays clips even after PC is turned off and on)
+* Browse slider to quickly go to any Sticky clip or Note
+* Cleaner UI
+* Code improvements
+* Bug fix: Changing the clip in Sticky clips will not add a new Sticky clip
+
 
 ---
 

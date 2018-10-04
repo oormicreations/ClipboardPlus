@@ -100,12 +100,16 @@ BOOL CSysHelper::SetClipboardText(CString text)
 	return TRUE;
 }
 
-CString CSysHelper::ReadStringFromFile(CString filename)
+CString CSysHelper::ReadStringFromFile(CString filename, BOOL prompt)
 {
 	CFile file;
-	file.Open(filename, CFile::modeRead);
+	if (!file.Open(filename, CFile::modeRead))
+	{
+		if (prompt) AfxMessageBox(_T("Failed to open the file: ") + filename, MB_ICONERROR);
+		return _T("");
+	}
 
-	int len = file.GetLength();
+	UINT len = (UINT)file.GetLength();
 	char * buf = new char[len + 1];
 
 	file.Read(buf, len);
@@ -249,6 +253,7 @@ CString CSysHelper::GetAppFileName(UINT type)
 		CString fname;
 		if (type == CBP_SNOTES_FILE)	fname = _T("\\CBP_StickyClips.txt");
 		if (type == CBP_ALERT_FILE)	fname = _T("\\rem.wav");
+		if (type == CBP_BACKUP_FILE)	fname = _T("\\CBP_Backup.txt");
 		if (fname.IsEmpty()) return _T("");
 
 		path = path + fname;
