@@ -176,21 +176,22 @@ BOOL CClipEditorDlg::ReadStickyNotes()
 				else
 				{
 					m_ClipEd.SetWindowText(_T("How does it work?\r\n\r\n\
-C : Copy Clip\r\n+ : New Clip\r\n- : Delete note\r\n✓ : Close\r\nSlider: Browse\
+C : Copy Clip\r\n+ : New Clip\r\n- : Delete Clip\r\n✓ : Save and Close\r\nSlider: Browse\
 \r\nset reminder 11:30 call someone\r\nset reminder 2h 15m go jogging and drop trash\r\nPress add + button to set a reminder as above"));
 				}
 
 				m_SliderBrowse.SetRange(1, m_NoteCount);
 				m_SliderBrowse.SetPos(m_NoteCount);
 
+				if (!m_AddThis.IsEmpty())
+				{
+					m_ClipEd.SetWindowText(m_AddThis);
+					OnBnClickedAddnote();
+				}
+
 				return TRUE;
 			}
 
-			if (!m_AddThis.IsEmpty())
-			{
-				m_ClipEd.SetWindowText(m_AddThis);
-				OnBnClickedAddnote();
-			}
 
 
 		}
@@ -237,9 +238,15 @@ void CClipEditorDlg::OnBnClickedAddnote()
 		return;
 	}
 
-	m_ClipEd.SetWindowText(_T(""));
-
 	CString note, str;
+	if (m_IsStickyNote)
+	{
+		note = m_AddThis;
+		m_ClipEd.SetWindowText(note);
+		m_HasChanged = TRUE;
+	}
+	else  m_ClipEd.SetWindowText(_T(""));
+
 
 	CString time = CTime::GetCurrentTime().Format("%Y-%m-%d  %H:%M:%S");
 

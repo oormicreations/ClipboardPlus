@@ -3,11 +3,11 @@
 ![Promo](https://oormi.in/software/cbp/images/promohelp.jpg)
 
 
-**ClipBoard Plus** is a free and open sourced windows application for viewing and managing a clipboard with multiple clips.
+**Clipboard Plus** is a free and open sourced windows application for viewing and managing a clipboard with multiple clips.
 
 It maintains and can display up to five copied items or clips. Clips are arranged from newest to oldest.
 
-Clicking on a clip loads it back into the clipboard and it is ready for pasting into another application. It also now becomes the lastest clip, and other clips scroll down.
+Clicking on a clip loads it back into the clipboard and it is ready for pasting into another application. It also now becomes the latest clip, and other clips scroll down.
 
 To explore more features and functions of this utility, right click on it.
 
@@ -44,7 +44,7 @@ https://github.com/oormicreations/ClipboardPlus/releases
 * Clicking on any of the preview clip loads it on to the clipboard.
 * Clear specific clips or clear all.
 * Save specific clips or save all as text file.
-* Open URLs directly from ClipboardPlus.
+* Open URLs directly from Clipboard Plus.
 * Edit clips
 * Hides copied passwords automatically.
 
