@@ -1,8 +1,9 @@
 #pragma once
-#define CBP_USER_FOLDER 1
-#define CBP_SNOTES_FILE 1
-#define CBP_ALERT_FILE 2
-#define CBP_BACKUP_FILE 3
+#define CBP_USER_FOLDER		1
+#define CBP_SNOTES_FILE		1
+#define CBP_ALERT_FILE		2
+#define CBP_BACKUP_FILE		3
+#define CBP_REM_FILE		4
 
 #define TWIPS_PER_PT 20
 #define WM_CBP_RESTORE WM_USER + 100

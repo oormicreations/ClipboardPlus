@@ -67,6 +67,8 @@ BEGIN_MESSAGE_MAP(CClipBoardPlusDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_STICKYNOTES, &CClipBoardPlusDlg::OnMenuStickynotes)
 	ON_MESSAGE(WM_CBP_RESTORE, RestoreHandler)
 	ON_COMMAND(ID_MENU_REMAINONTOP, &CClipBoardPlusDlg::OnMenuRemainontop)
+	ON_COMMAND(ID_MENU_REMINDERS, &CClipBoardPlusDlg::OnMenuReminders)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -93,7 +95,7 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	}
 
 	m_CBPVersionMaj = 1;
-	m_CBPVersionMin = 2;
+	m_CBPVersionMin = 3;
 
 	m_PasswordMode = TRUE;
 	m_IsClipBoardPlusEvent = FALSE;
@@ -105,6 +107,8 @@ BOOL CClipBoardPlusDlg::OnInitDialog()
 	SetupMinimizeToTray();
 	InitClips();
 	GetClip(); //get already present contents
+
+	InitReminders();
 
 	m_NetHelper.ReportUsage(_T("ClipboardPlus"), m_CBPVersionMaj*10 + m_CBPVersionMin);
 
@@ -184,10 +188,10 @@ void CClipBoardPlusDlg::GetClip()
 	CString tmpClip;
 	CString newClip = GetClipboardText();
 
-	//if (m_Clips[0] == newClip)
-	//{
-	//	return;
-	//}
+	if (m_Clips[0] == newClip)
+	{
+		return;
+	}
 
 	if (!m_Clips[0].IsEmpty())
 	{
@@ -330,6 +334,8 @@ void CClipBoardPlusDlg::OnDestroy()
 		GetWindowPlacement(&wp);
 		AfxGetApp()->WriteProfileBinary(_T("ClipboardPlus"), _T("WP"), (LPBYTE)&wp, sizeof(wp));
 	}
+
+	KillTimer(m_uRemTimer);
 
 	CDialogEx::OnDestroy();
 
@@ -711,7 +717,7 @@ void CClipBoardPlusDlg::OnMenuCheckforupdates()
 {
 	m_NetHelper.Checkforupdates(m_CBPVersionMaj, m_CBPVersionMin,
 		_T("https://oormi.in/software/cbp/updatecbp.txt"),
-		_T(" https://github.com/oormicreations/ClipboardPlus"), _T("Clipboard Plus App"));
+		_T(" https://github.com/oormicreations/ClipboardPlus/releases"), _T("Clipboard Plus App"));
 
 }
 
@@ -802,7 +808,7 @@ void CClipBoardPlusDlg::OnMenuRemainontop()
 	m_MenuPopup.CheckMenuItem(ID_MENU_REMAINONTOP, (MF_CHECKED * (UINT)m_TopmostMode) | MF_BYCOMMAND);
 
 	if(m_TopmostMode) SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	else SetWindowPos(&wndBottom, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	else SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
 void CClipBoardPlusDlg::SaveToBackup()
@@ -831,8 +837,16 @@ void CClipBoardPlusDlg::LoadFromBackup()
 
 		if (!sClips.IsEmpty())
 		{
-			if (!ParseClips(sClips))
+			if (ParseClips(sClips))
 			{
+				for (int i = 0; i < MAXCLIPS; i++)
+				{
+					m_ClipButton[i].SetText(m_Clips[i]);
+				}
+
+				m_ClipButton[0].SetSkin(IDB_BITMAP_CLIP_HOT, IDB_BITMAP_CLIP_HOT, RGB(30, 30, 30));
+
+				MaskClips();
 				return;
 			}
 		}
@@ -868,4 +882,43 @@ BOOL CClipBoardPlusDlg::ParseClips(CString clips)
 
 	if (iCount<1)return FALSE;
 	return TRUE;
+}
+
+
+void CClipBoardPlusDlg::OnMenuReminders()
+{
+	m_RemDlg.DoModal();
+}
+
+void CClipBoardPlusDlg::InitReminders()
+{
+	m_RemDlg.m_sVer.Format(_T("CBP Ver %d.%d←"), m_CBPVersionMaj, m_CBPVersionMin);
+	m_RemDlg.LoadReminders();
+	m_uRemTimer = SetTimer(WM_TIMER + 1001, 30000, NULL);
+}
+
+void CClipBoardPlusDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == m_uRemTimer)
+	{
+		CTime curTime = CTime::GetCurrentTime();
+		for (int t = 0; t < m_RemDlg.m_uRemCount; t++)
+		{
+			if (m_RemDlg.m_rReminders[t].m_bExpired) continue;
+			if (m_RemDlg.m_rReminders[t].m_tRemTime == 0) continue;
+			if (m_RemDlg.m_rReminders[t].m_tRemTime <= curTime)
+			{
+				m_RemDlg.m_rReminders[t].m_bExpired = TRUE;
+
+				SendMessage(WM_CBP_RESTORE, 0, 0);
+
+				CSysHelper sysHelper;
+				CString remalertfile = sysHelper.GetAppFileName(CBP_ALERT_FILE);
+				if (!remalertfile.IsEmpty()) PlaySound(remalertfile, NULL, SND_FILENAME);
+				MessageBox(m_RemDlg.m_rReminders[t].m_sDispStr, _T("ClipBoard Plus Reminder"), MB_ICONINFORMATION);
+			}
+		}
+	}
+
+	CDialogEx::OnTimer(nIDEvent);
 }

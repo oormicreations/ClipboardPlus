@@ -252,8 +252,9 @@ CString CSysHelper::GetAppFileName(UINT type)
 	{
 		CString fname;
 		if (type == CBP_SNOTES_FILE)	fname = _T("\\CBP_StickyClips.txt");
-		if (type == CBP_ALERT_FILE)	fname = _T("\\rem.wav");
+		if (type == CBP_ALERT_FILE)		fname = _T("\\rem.wav");
 		if (type == CBP_BACKUP_FILE)	fname = _T("\\CBP_Backup.txt");
+		if (type == CBP_REM_FILE)		fname = _T("\\CBP_Reminders.txt");
 		if (fname.IsEmpty()) return _T("");
 
 		path = path + fname;

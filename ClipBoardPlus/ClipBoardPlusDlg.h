@@ -7,6 +7,8 @@
 #include "NetHelper.h"
 #include "ClipEditorDlg.h"
 #include "SysHelper.h"
+#include "ReminderDlg.h"
+#include "mmsystem.h"
 
 
 #define MAXCLIPS 5
@@ -32,6 +34,9 @@ public:
 	int m_CBPVersionMaj, m_CBPVersionMin;
 	CNetHelper m_NetHelper;
 	CClipEditorDlg *m_EdDlg;
+	CReminderDlg m_RemDlg;
+	UINT m_uRemTimer;
+
 
 	void InitClips();
 	void GetClip();
@@ -52,6 +57,8 @@ public:
 	void SaveToBackup();
 	void LoadFromBackup();
 	BOOL ParseClips(CString notes);
+
+	void InitReminders();
 
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CLIPBOARDPLUS_DIALOG };
@@ -104,4 +111,6 @@ public:
 	afx_msg LRESULT RestoreHandler(WPARAM wp, LPARAM lp);
 
 	afx_msg void OnMenuRemainontop();
+	afx_msg void OnMenuReminders();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 };

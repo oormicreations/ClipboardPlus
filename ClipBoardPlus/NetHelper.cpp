@@ -48,7 +48,7 @@ void CNetHelper::ReportUsage(CString regSection, int ver)
 
 	if (!AfxGetApp()->GetProfileBinary(regSection, _T("VERSION"), (LPBYTE*)&c, &i))
 	{
-		CWinThread* hTh1 = AfxBeginThread(UsageProc, (LPVOID)&ver/*UsageProc receives this as param */, THREAD_PRIORITY_NORMAL);
+		AfxBeginThread(UsageProc, (LPVOID)&ver/*UsageProc receives this as param */, THREAD_PRIORITY_NORMAL);
 		AfxGetApp()->WriteProfileBinary(regSection, _T("VERSION"), (LPBYTE)&ver, sizeof(ver));
 	}
 	

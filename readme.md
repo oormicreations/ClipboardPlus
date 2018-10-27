@@ -13,6 +13,8 @@ To explore more features and functions of this utility, right click on it.
 
 It has a built in Sticky Note tool in which the clips can be stored, notes can be added and reminders can be set.
 
+It also has a feature to set reminders.
+
 This tiny but useful utility is completely free and open sourced. 
 
 ---
@@ -50,7 +52,7 @@ https://github.com/oormicreations/ClipboardPlus/releases
 
 * Built in Sticky Clips.
 * Send clips to Sticky Clips.
-* Set reminders from Sticky Clips.
+* Set reminders.
 
 * Remembers window position.
 * Can be minimized to the tray.
@@ -58,6 +60,15 @@ https://github.com/oormicreations/ClipboardPlus/releases
 
 * Supported on MS Windows 7 to 10.
 * IDE MS VS 2015, C++, MFC
+
+---
+
+**What is new in version 1.3**
+
+* GUI for reminders
+* Bug fixes
+* Better right click menu
+* Can delete auto saved (persistant) clips if needed
 
 ---
 

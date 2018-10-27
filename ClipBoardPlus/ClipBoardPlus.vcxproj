@@ -193,6 +193,8 @@
     <ClInclude Include="ClipButton.h" />
     <ClInclude Include="ClipEditorDlg.h" />
     <ClInclude Include="NetHelper.h" />
+    <ClInclude Include="Reminder.h" />
+    <ClInclude Include="ReminderDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SysHelper.h" />
@@ -205,6 +207,8 @@
     <ClCompile Include="ClipButton.cpp" />
     <ClCompile Include="ClipEditorDlg.cpp" />
     <ClCompile Include="NetHelper.cpp" />
+    <ClCompile Include="Reminder.cpp" />
+    <ClCompile Include="ReminderDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
