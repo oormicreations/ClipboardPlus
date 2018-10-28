@@ -4,7 +4,6 @@
 
 CReminder::CReminder()
 {
-	m_bExpired = FALSE;
 }
 
 
@@ -14,13 +13,42 @@ CReminder::~CReminder()
 
 void CReminder::SetRemDateTime(CString sToken)
 {
-	int iStart = sToken.Find(_T("|"));
-	if (iStart >= 0) m_sRemDesc = sToken.Right(sToken.GetLength() - iStart -1);
-	m_tRemTime = _tcstoui64(sToken, NULL, 10);
-
+	int iStart = 0, iCount = 0;
+	CString token;
+	CString separator = _T("|");
 	CTime curTime = CTime::GetCurrentTime();
-	if (m_tRemTime < curTime)m_bExpired = TRUE;
 
-	m_sDispStr = m_tRemTime.Format(_T("%Y-%m-%d | %H:%M | ")) + m_sRemDesc;
+	while (iStart >= 0)
+	{
+		token = sToken.Tokenize(separator, iStart);
+		token.Trim();
+		if (!token.IsEmpty())
+		{
+			if (iCount == 0) m_tRemTime = _tcstoui64(token, NULL, 10);
+			if (iCount == 1)
+			{
+				m_sStatus = token;
+				if (m_tRemTime <= curTime)
+				{
+					if (m_sStatus == _T("Active"))
+					{
+						m_sStatus = _T("Missed");
+					}
+				}
 
+			}
+			if (iCount == 2) m_sRemDesc = token;
+			iCount++;
+		}
+
+		if (iCount >= 3)break;
+	}
+
+	m_sDispStr = m_tRemTime.Format(_T("%Y-%m-%d | %H:%M | ")) + m_sStatus + m_sRemDesc;
+
+}
+
+CString CReminder::GetNotificationStr()
+{
+	return (m_tRemTime.Format(_T("%Y-%m-%d | %H:%M | ")) + m_sStatus + _T(" |\r\n\r\n") + m_sRemDesc);
 }

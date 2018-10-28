@@ -868,8 +868,9 @@ BOOL CClipBoardPlusDlg::ParseClips(CString clips)
 	token = token + separator;
 	if (token.Compare(sVer))
 	{
-		AfxMessageBox(_T("The backup file has some problems."));
-		return FALSE;
+		//no issues for 1.3, bypass check
+		//AfxMessageBox(_T("The backup file has some problems."));
+		//return FALSE;
 	}
 
 	while (iStart >= 0)
@@ -904,18 +905,19 @@ void CClipBoardPlusDlg::OnTimer(UINT_PTR nIDEvent)
 		CTime curTime = CTime::GetCurrentTime();
 		for (int t = 0; t < m_RemDlg.m_uRemCount; t++)
 		{
-			if (m_RemDlg.m_rReminders[t].m_bExpired) continue;
+			if (m_RemDlg.m_rReminders[t].m_sStatus == _T("Expired")) continue;
 			if (m_RemDlg.m_rReminders[t].m_tRemTime == 0) continue;
 			if (m_RemDlg.m_rReminders[t].m_tRemTime <= curTime)
 			{
-				m_RemDlg.m_rReminders[t].m_bExpired = TRUE;
-
 				SendMessage(WM_CBP_RESTORE, 0, 0);
 
 				CSysHelper sysHelper;
 				CString remalertfile = sysHelper.GetAppFileName(CBP_ALERT_FILE);
 				if (!remalertfile.IsEmpty()) PlaySound(remalertfile, NULL, SND_FILENAME);
-				MessageBox(m_RemDlg.m_rReminders[t].m_sDispStr, _T("ClipBoard Plus Reminder"), MB_ICONINFORMATION);
+				MessageBox(m_RemDlg.m_rReminders[t].GetNotificationStr(), _T("ClipBoard Plus Reminder"), MB_ICONINFORMATION);
+
+				m_RemDlg.m_rReminders[t].m_sStatus = _T("Expired");
+				m_RemDlg.SaveReminders();
 			}
 		}
 	}

@@ -75,7 +75,7 @@ void CReminderDlg::OnBnClickedButtonSetrem()
 	{
 		for (int t = 0; t < MAX_REMINDERS_NEW; t++)
 		{
-			if (m_rReminders[t].m_bExpired)
+			if (m_rReminders[t].m_sStatus == _T("Expired"))
 			{
 				rCount = t;
 				break;
@@ -88,9 +88,6 @@ void CReminderDlg::OnBnClickedButtonSetrem()
 		UINT res = AfxMessageBox(_T("Maximum limit for reminders has been reached. Please free up some space by deleting old reminders.\r\nClick Yes to proceed anyway. No to cancel"), MB_YESNO);
 		if (res == IDNO) return;
 	}
-
-	//GetDlgItemText(IDC_DATETIMEPICKER1, m_rReminders[rCount].m_sRemDate);
-	//GetDlgItemText(IDC_DATETIMEPICKER2, m_rReminders[rCount].m_sRemTime);
 
 	GetDlgItemText(IDC_EDIT_REMTEXT, m_rReminders[rCount].m_sRemDesc);
 	if (m_rReminders[rCount].m_sRemDesc.IsEmpty())
@@ -105,8 +102,9 @@ void CReminderDlg::OnBnClickedButtonSetrem()
 
 	m_rReminders[rCount].m_tRemTime = CTime(dt1.GetYear(), dt1.GetMonth(), dt1.GetDay(), dt2.GetHour(), dt2.GetMinute(), 0);
 	m_rReminders[rCount].m_sDispStr = m_rReminders[rCount].m_tRemTime.Format(_T("%Y-%m-%d | %H:%M | ")) + m_rReminders[rCount].m_sRemDesc;
+	m_rReminders[rCount].m_sStatus = _T("Active");
 
-	m_lbRemList.AddString(m_rReminders[rCount].m_sDispStr);
+	m_lbRemList.AddString(m_rReminders[rCount].GetNotificationStr());
 }
 
 
@@ -139,17 +137,20 @@ void CReminderDlg::OnLbnSelchangeListRem()
 {
 	CString str;
 	int iID = m_lbRemList.GetCurSel();
-	SetDlgItemText(IDC_EDIT_REMTEXT, m_rReminders[iID].m_sRemDesc);
 
-	m_dtDate.SetTime(&m_rReminders[iID].m_tRemTime);
-	m_dtTime.SetTime(&m_rReminders[iID].m_tRemTime);
+	str = m_rReminders[iID].GetNotificationStr();
+	SetDlgItemText(IDC_EDIT_REMTEXT, str);
+
+	//below will fail for expired reminders because setrange has set a minimum
+	//m_dtDate.SetTime(&m_rReminders[iID].m_tRemTime);
+	//m_dtTime.SetTime(&m_rReminders[iID].m_tRemTime);
 }
 
 void CReminderDlg::SetList()
 {
 	for (int i = 0; i < m_uRemCount; i++)
 	{
-		m_lbRemList.AddString(m_rReminders[i].m_sDispStr);
+		m_lbRemList.AddString(m_rReminders[i].GetNotificationStr());
 	}
 }
 
@@ -197,7 +198,7 @@ BOOL CReminderDlg::ParseRems(CString sRems)
 
 		if (iCount >= MAX_REMINDERS_NEW)break;
 	}
-	//iCount--;
+
 	m_uRemCount = iCount;
 
 	if (iCount<1)return FALSE;
@@ -208,13 +209,13 @@ BOOL CReminderDlg::SaveReminders()
 {
 	CString str;
 	CString sRems = m_sVer;
-	int iCount = m_lbRemList.GetCount();
-	if (iCount >= MAX_REMINDERS_NEW) iCount = MAX_REMINDERS_NEW;
 
-	for (int i = 0; i < iCount; i++)
+	if (m_uRemCount >= MAX_REMINDERS_NEW) m_uRemCount = MAX_REMINDERS_NEW;
+
+	for (int i = 0; i < m_uRemCount; i++)
 	{
 		LONGLONG t = m_rReminders[i].m_tRemTime.GetTime();
-		str.Format(_T("%I64d|%s"), t, m_rReminders[i].m_sRemDesc);
+		str.Format(_T("%I64d|%s|%s"), t, m_rReminders[i].m_sStatus, m_rReminders[i].m_sRemDesc);
 		sRems = sRems + _T("\r\n") + str + _T("←");
 	}
 

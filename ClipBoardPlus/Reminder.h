@@ -10,13 +10,14 @@ public:
 	CReminder();
 	~CReminder();
 
-	CString m_sRemDate;
-	CString m_sRemTime;
+	CString m_sStatus;
 	CString m_sRemDesc;
 	CString m_sDispStr;
 	CTime m_tRemTime;
-	BOOL m_bExpired;
 
 	void SetRemDateTime(CString sToken);
+	CString GetNotificationStr();
+
 };
 
+                                                                                                                                                                                                                                                                                                                                                       

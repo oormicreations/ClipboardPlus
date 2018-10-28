@@ -15,14 +15,11 @@ public:
 	virtual ~CReminderDlg();
 
 	CString m_sVer;
-	//CString m_sReminderDescription;
-	//CString m_sDate;
-	//CString m_sTime;
-
 	CDateTimeCtrl m_dtDate;
 	CDateTimeCtrl m_dtTime;
 	CListBox m_lbRemList;
 
+	virtual BOOL OnInitDialog();
 	BOOL LoadReminders();
 	BOOL SaveReminders();
 	BOOL ParseRems(CString sRems);
@@ -44,7 +41,6 @@ public:
 	afx_msg void OnBnClickedButtonSetrem();
 	afx_msg void OnDtnDatetimechangeDatetimepicker1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDtnDatetimechangeDatetimepicker2(NMHDR *pNMHDR, LRESULT *pResult);
-	virtual BOOL OnInitDialog();
 	afx_msg void OnBnClickedButtonDelrem();
 	afx_msg void OnLbnSelchangeListRem();
 	afx_msg void OnDestroy();
