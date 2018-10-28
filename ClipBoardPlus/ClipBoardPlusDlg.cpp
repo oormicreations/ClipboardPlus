@@ -906,6 +906,7 @@ void CClipBoardPlusDlg::OnTimer(UINT_PTR nIDEvent)
 		for (int t = 0; t < m_RemDlg.m_uRemCount; t++)
 		{
 			if (m_RemDlg.m_rReminders[t].m_sStatus == _T("Expired")) continue;
+			if (m_RemDlg.m_rReminders[t].m_sStatus == _T("Deleted")) continue;
 			if (m_RemDlg.m_rReminders[t].m_tRemTime == 0) continue;
 			if (m_RemDlg.m_rReminders[t].m_tRemTime <= curTime)
 			{

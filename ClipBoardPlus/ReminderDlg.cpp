@@ -130,6 +130,7 @@ void CReminderDlg::OnBnClickedButtonDelrem()
 {
 	int iID = m_lbRemList.GetCurSel();
 	m_lbRemList.DeleteString(iID);
+	m_rReminders[iID].m_sStatus = _T("Deleted");
 }
 
 
@@ -138,7 +139,9 @@ void CReminderDlg::OnLbnSelchangeListRem()
 	CString str;
 	int iID = m_lbRemList.GetCurSel();
 
-	str = m_rReminders[iID].GetNotificationStr();
+	if (iID < 0) return;
+
+	m_lbRemList.GetText(iID, str);
 	SetDlgItemText(IDC_EDIT_REMTEXT, str);
 
 	//below will fail for expired reminders because setrange has set a minimum
@@ -148,9 +151,12 @@ void CReminderDlg::OnLbnSelchangeListRem()
 
 void CReminderDlg::SetList()
 {
-	for (int i = 0; i < m_uRemCount; i++)
+	for (UINT i = 0; i < m_uRemCount; i++)
 	{
-		m_lbRemList.AddString(m_rReminders[i].GetNotificationStr());
+		if (m_rReminders[i].m_sStatus != _T("Deleted"))
+		{
+			m_lbRemList.AddString(m_rReminders[i].GetNotificationStr());
+		}
 	}
 }
 
@@ -212,11 +218,14 @@ BOOL CReminderDlg::SaveReminders()
 
 	if (m_uRemCount >= MAX_REMINDERS_NEW) m_uRemCount = MAX_REMINDERS_NEW;
 
-	for (int i = 0; i < m_uRemCount; i++)
+	for (UINT i = 0; i < m_uRemCount; i++)
 	{
-		LONGLONG t = m_rReminders[i].m_tRemTime.GetTime();
-		str.Format(_T("%I64d|%s|%s"), t, m_rReminders[i].m_sStatus, m_rReminders[i].m_sRemDesc);
-		sRems = sRems + _T("\r\n") + str + _T("←");
+		if (m_rReminders[i].m_sStatus != _T("Deleted"))
+		{
+			LONGLONG t = m_rReminders[i].m_tRemTime.GetTime();
+			str.Format(_T("%I64d|%s|%s"), t, m_rReminders[i].m_sStatus, m_rReminders[i].m_sRemDesc);
+			sRems = sRems + _T("\r\n") + str + _T("←");
+		}
 	}
 
 	CSysHelper SysHelper;
