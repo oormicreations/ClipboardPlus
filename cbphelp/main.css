@@ -140,3 +140,64 @@ ul.nav a:hover, ul.nav a:active, ul.nav a:focus { /* this changes the background
 	width: 70%;
 }
 
+
+
+
+.FAQ { 
+  vertical-align: top; 
+  height: auto; 
+}
+
+.list {
+  display:none; 
+  height:auto;
+  margin:0;
+  float: left;
+}
+
+.show {
+  display: none; 
+}
+
+.hide:target + .show {
+  display: inline; 
+}
+.hide:target {
+  display: none; 
+}
+.hide:target ~ .list {
+  display:inline; 
+}
+
+/*style the (+) and (-) */
+.hide, .show {
+  width: 80%;
+  height: 30px;
+  border-radius: 3px;
+  background: #DDDDD9;
+  margin-right: 0;
+  float: left;
+  margin-bottom: 15px;
+  padding-left: 15px;
+
+}
+
+.hide:hover, .show:hover {
+  text-decoration: none;
+  box-shadow: 0 0 4px #222 inset;
+  margin-bottom: 15px;
+}
+
+.list p {
+  height:auto;
+  margin:0;
+}
+.question {
+  float: left;
+  height: auto;
+  width: 90%;
+  line-height: 20px;
+  padding-left: 20px;
+  margin-bottom: 25px;
+
+}

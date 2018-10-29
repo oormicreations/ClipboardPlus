@@ -113,4 +113,5 @@ public:
 	afx_msg void OnMenuRemainontop();
 	afx_msg void OnMenuReminders();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnSaveDeleteautosavedclips();
 };

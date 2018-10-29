@@ -1,1 +1,1 @@
-1|2|https://github.com/oormicreations/ClipboardPlus/releases
+1|3|https://github.com/oormicreations/ClipboardPlus/releases

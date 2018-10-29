@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CClipBoardPlusDlg, CDialogEx)
 	ON_COMMAND(ID_MENU_REMAINONTOP, &CClipBoardPlusDlg::OnMenuRemainontop)
 	ON_COMMAND(ID_MENU_REMINDERS, &CClipBoardPlusDlg::OnMenuReminders)
 	ON_WM_TIMER()
+	ON_COMMAND(ID_SAVE_DELETEAUTOSAVEDCLIPS, &CClipBoardPlusDlg::OnSaveDeleteautosavedclips)
 END_MESSAGE_MAP()
 
 
@@ -903,7 +904,7 @@ void CClipBoardPlusDlg::OnTimer(UINT_PTR nIDEvent)
 	if (nIDEvent == m_uRemTimer)
 	{
 		CTime curTime = CTime::GetCurrentTime();
-		for (int t = 0; t < m_RemDlg.m_uRemCount; t++)
+		for (UINT t = 0; t < m_RemDlg.m_uRemCount; t++)
 		{
 			if (m_RemDlg.m_rReminders[t].m_sStatus == _T("Expired")) continue;
 			if (m_RemDlg.m_rReminders[t].m_sStatus == _T("Deleted")) continue;
@@ -924,4 +925,12 @@ void CClipBoardPlusDlg::OnTimer(UINT_PTR nIDEvent)
 	}
 
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CClipBoardPlusDlg::OnSaveDeleteautosavedclips()
+{
+	CSysHelper SysHelper;
+	SysHelper.SaveString(SysHelper.GetAppFileName(CBP_BACKUP_FILE), _T(""));
+
 }
